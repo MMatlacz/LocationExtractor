@@ -1,7 +1,6 @@
 *.pyc
 *.DS_Store
 venv
-location_extractor/data/locs.db
 /dist/
 /*.egg-info
 /*.egg
