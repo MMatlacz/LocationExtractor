@@ -1,2 +1,3 @@
 include README.md
-include geograpy/data/*.csv
+include data/*.csv
+include data/*.db
