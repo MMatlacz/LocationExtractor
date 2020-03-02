@@ -1,5 +1,6 @@
 LocationExtractor
 ========
+[![Build Status](https://travis-ci.com/MMatlacz/LocationExtractor.svg?token=nK1H37yHzQmBRmsEpSZq&branch=master)](https://travis-ci.com/MMatlacz/LocationExtractor)
 
 Extract place names from a URL or text, and add context to those names -- for 
 example distinguishing between a country, region or city. 
