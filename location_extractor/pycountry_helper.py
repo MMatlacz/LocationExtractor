@@ -1,19 +1,28 @@
+import os
+import string
 from typing import Optional, Tuple
 
+import pandas as pd
 import pycountry
 
+from location_extractor import src_dir
 from location_extractor.containers import Country, Region
 
 
 class PycountryHelper:
+    def __init__(self):
+        dictionary = pd.read_csv(os.path.join(src_dir, "data", "ISO3166ErrorDictionary.csv"))
+        self.dictionary = dict(zip(*dictionary[["data.un.org entry", "ISO3166 name or code"]].values.T))
+
     def get_field(self, country_object: pycountry.db.Data, field_name: str) -> str:
         fields = country_object.__dict__['_fields']
         value = fields.get(field_name)
         return value
 
-    def get_country_name_and_iso_code(self, country: str) -> Optional[Country]:
+    def get_country_name_and_iso_code(self, country_name: str) -> Optional[Country]:
+        cleaned_name = self.dictionary.get(country_name, country_name)
         try:
-            country_object = pycountry.countries.get(name=country)
+            country_object = pycountry.countries.get(name=cleaned_name)
         except KeyError:
             country_object = None
         except LookupError:
@@ -21,7 +30,7 @@ class PycountryHelper:
 
         if not country_object:
             try:
-                country_object = pycountry.countries.search_fuzzy(country)
+                country_object = pycountry.countries.search_fuzzy(cleaned_name)
             except LookupError:
                 pass
 
@@ -29,12 +38,11 @@ class PycountryHelper:
             for found_country in country_object:
                 name = self.get_field(found_country, 'name')
                 official_name = self.get_field(found_country, 'official_name')
-                alpha_3 = self.get_field(found_country, 'alpha_3')
                 alpha_2 = self.get_field(found_country, 'alpha_2')
 
-                if name and (country in {name, official_name, alpha_3, alpha_2}):
+                if name and (cleaned_name in {name, official_name}):
                     return Country(name=name, iso_code=alpha_2)
-                elif name and country in name:
+                elif name and cleaned_name in name.split():
                     return Country(name=name, iso_code=alpha_2)
         elif isinstance(country_object, pycountry.db.Data):
             return Country(name=country_object.name, iso_code=country_object.alpha_2)

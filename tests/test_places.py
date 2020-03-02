@@ -60,7 +60,6 @@ def location_extractor():
         (['Germany', 'Poland'], ['Germany', 'Poland']),
         (['USA', 'UK'], ['United States', 'United Kingdom']),
         (['The USA', 'The UK'], ['United States', 'United Kingdom']),
-        (['US'], ['United States']),
         (['Ukraine'], ['Ukraine']),
     ]
 )
@@ -104,3 +103,17 @@ def test_get_cities(location_extractor, places, expected_city):
     cities, _ = location_extractor.get_cities(rest, countries, regions)
 
     assert City.many_to_list(cities) == expected_city
+
+
+@pytest.mark.parametrize(
+    ["word", "is_location"],
+    [
+        ('warsaw', True),
+        ('is', False),
+        ('living', False),
+        ('us', True),
+        ('berlin', True),
+    ]
+)
+def test_is_location(location_extractor, word, is_location):
+    assert location_extractor.is_location(word) is is_location
