@@ -1,9 +1,6 @@
-This fork fixes issues with newer versions of nltk.
-
-A rewrite that fixes more issues is available here, please use it instead: https://github.com/Corollarium/geograpy2
-
-Geograpy
+LocationExtractor
 ========
+[![Build Status](https://travis-ci.com/MMatlacz/LocationExtractor.svg?token=nK1H37yHzQmBRmsEpSZq&branch=master)](https://travis-ci.com/MMatlacz/LocationExtractor)
 
 Extract place names from a URL or text, and add context to those names -- for 
 example distinguishing between a country, region or city. 
@@ -12,13 +9,7 @@ example distinguishing between a country, region or city.
 
 Grab the package using `pip` (this will take a few minutes)
 
-    pip install geograpy
-
-Geograpy uses [NLTK](http://www.nltk.org/) for entity recognition, so you'll also need 
-to download the models we're using. Fortunately there's a command that'll take 
-care of this for you. 
-
-    geograpy-nltk
+    pip install LocationExtractor
 
 ## Basic Usage
 
@@ -99,16 +90,18 @@ is available after the corresponding `set_` method is called.
 
 ## Credits
 
-Geograpy uses the following excellent libraries:
+LocationExtractor is based on:
+
+* [geograpy](https://github.com/ushahidi/geograpy)
+
+LocationExtractor uses the following excellent libraries:
 
 * [NLTK](http://www.nltk.org/) for entity recognition
 * [newspaper](https://github.com/codelucas/newspaper) for text extraction from HTML
 * [jellyfish](https://github.com/sunlightlabs/jellyfish) for fuzzy text match
 * [pycountry](https://pypi.python.org/pypi/pycountry) for country/region lookups
 
-Geograpy uses the following data sources:
+LocationExtractor uses the following data sources:
 
 * [GeoLite2](http://dev.maxmind.com/geoip/geoip2/geolite2/) for city lookups
 * [ISO3166ErrorDictionary](https://github.com/bodacea/countryname/blob/master/countryname/databases/ISO3166ErrorDictionary.csv) for common country mispellings _via [Sara-Jayne Terp](https://github.com/bodacea)_
-
-Hat tip to [Chris Albon](https://github.com/chrisalbon) for the name.
