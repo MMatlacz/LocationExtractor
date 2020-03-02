@@ -5,7 +5,10 @@ description = "Extract countries, regions and cities from text"
 # TODO: add authors
 authors = []
 license = "MIT"
-include = ["README.md", "data/*.csv", "data/*.db"]
+include = [
+    "location_extractor/data/*.csv",
+    "location_extractor/data/*.db",
+]
 readme = "README.md"
 repository = "https://github.com/MMatlacz/LocationExtractor"
 # TODO: add classifiers
