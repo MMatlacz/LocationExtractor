@@ -15,4 +15,5 @@ script:
   - pytest  # run tests
   - poetry check  # validate `pyproject.toml`
 after_success:
+  - pip install codecov
   - codecov  # submit coverage

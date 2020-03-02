@@ -23,7 +23,6 @@ pandas = "^1.0.1"
 [tool.poetry.dev-dependencies]
 pytest = "^5.3.5"
 pytest-cov = "^2.8.1"
-codecov = "^2.0.16"
 
 [build-system]
 requires = ["poetry>=1.0.0"]
