@@ -4,3 +4,6 @@ venv
 /dist/
 /*.egg-info
 /*.egg
+.python-version
+.coverage
+.tox/

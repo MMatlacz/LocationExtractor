@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "location_extractor"
+version = "1.0.0"
+description = "Extract countries, regions and cities from text"
+# TODO: add authors
+authors = []
+license = "MIT"
+include = [
+    "location_extractor/data/*.csv",
+    "location_extractor/data/*.db",
+]
+readme = "README.md"
+repository = "https://github.com/MMatlacz/LocationExtractor"
+# TODO: add classifiers
+classifiers = [
+]
+
+[tool.poetry.dependencies]
+python = ">=3.7"
+numpy = "^1.18.1"
+nltk = "^3.4.5"
+jellyfish = "^0.7.2"
+pycountry = "^19.8.18"
+pandas = "^1.0.1"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.3.5"
+pytest-cov = "^2.8.1"
+
+[build-system]
+requires = ["poetry>=1.0.0"]
+build-backend = "poetry.masonry.api"
