@@ -1,34 +1,17 @@
 import csv
 import os
+import re
 import sqlite3
-from dataclasses import dataclass
-from pprint import pprint
-from typing import List, Set, Tuple, Optional
+from typing import List, Set, Tuple
 
 import pandas as pd
-import pycountry
 
 from location_extractor import src_dir
+from location_extractor.containers import Country, Region, City
 from location_extractor.extraction import NERExtractor
+from location_extractor.helpers import capitalize_name
+from location_extractor.pycountry_helper import PycountryHelper
 from location_extractor.utils import fuzzy_match
-
-
-@dataclass
-class Country:
-    name: str
-
-
-@dataclass
-class Region:
-    name: str
-    country: Country
-
-
-@dataclass
-class City:
-    name: str
-    region: Optional[Region]
-    country: Country
 
 
 class Extractor:
@@ -37,10 +20,9 @@ class Extractor:
         if not self.db_has_data():
             self.populate_db()
 
-        dictionary_path = os.path.join(src_dir, "data", "ISO3166ErrorDictionary.csv")
-        self.dictionary = pd.read_csv(dictionary_path)
-
         self.extractor = NERExtractor()
+
+        self.pycountry_helper = PycountryHelper()
 
     def populate_db(self):
         cur = self.conn.cursor()
@@ -80,29 +62,15 @@ class Extractor:
 
         return False
 
-    def capitalize_region_name(self, place):
-        splitted = place.split(' ')
-        capitalized = ' '.join([subword.capitalize() for subword in splitted])
-        splitted = capitalized.split('-')
-        capitalized = ' '.join([subword.capitalize() for subword in splitted])
-        return capitalized
+    def is_a_country(self, country_name: str):
+        clean_country_name, _ = self.pycountry_helper.get_country_name_and_iso_code(country_name)
 
-    def correct_misspelling(self, place_name: str):
-        result = self.dictionary[self.dictionary["data.un.org entry"] == place_name]["ISO3166 name or code"]
-        if result.shape[0] > 0:
-            return result.iloc[0]
+        if clean_country_name:
+            return True
         else:
-            return place_name
-
-    def is_a_country(self, country):
-        try:
-            found_index = pycountry.countries.get(name=country)
-            if not found_index:
-                return False
-            else:
-                return True
-        except KeyError:
-            return False
+            query = f"SELECT * FROM cities WHERE country_name = '{capitalize_name(country_name)}'"
+            countries_df = pd.read_sql(query, self.conn)
+            return countries_df.shape[0] > 0
 
     def places_by_name(self, place_name, column_name):
         cur = self.conn.cursor()
@@ -120,32 +88,29 @@ class Extractor:
     def regions_for_name(self, region_name):
         return self.places_by_name(region_name, 'subdivision_name')
 
-    def get_region_names(self, country: Country):
-        try:
-            obj = pycountry.countries.get(name=country.name)
-            regions = pycountry.subdivisions.get(country_code=obj.alpha_2)
-        except KeyError:
-            return []
+    def resolve_acronyms(self, place: str):
+        name = re.sub(
+            r"(^|(?P<before>\S*)\s)(?:The\s+)?(?P<country>usa)($|\s(?P<after>\S*))",
+            r"\g<before> United States \g<after>",
+            place,
+            flags=re.IGNORECASE
+        )
+        name = re.sub(
+            r"(^|(?P<before>\S*)\s)(?:The\s+)?(?P<country>uk)($|\s(?P<after>\S*))",
+            r"\g<before> United Kingdom \g<after>",
+            name,
+            flags=re.IGNORECASE
+        )
+        return name.strip()
 
-        return [Region(name=region.name, country=country) for region in regions]
-
-    def is_unused(self, place_name, countries, cities, regions):
-        places = [*countries, *cities, *regions]
-        without_misspelling = self.correct_misspelling(place_name)
-        return without_misspelling not in places
-
-    def region_match(self, place_name, region_name):
-        return fuzzy_match(place_name, region_name)
-
-    def get_countries(self, places) -> Tuple[List[Country], Set[str]]:
-        places_without_misspellings = map(self.correct_misspelling, places)
+    def get_countries(self, places: List[str]) -> Tuple[List[Country], Set[str]]:
         countries = []
         remaining_places = set()
-        cleaned_and_original = [*places_without_misspellings, *places]
-        for i, cleaned in enumerate(cleaned_and_original):
-            original = places[i % len(places)]
-            if self.is_a_country(cleaned):
-                country = Country(cleaned)
+        for i, original in enumerate(places):
+            resolved = self.resolve_acronyms(original)
+            clean_country = self.pycountry_helper.get_country_name_and_iso_code(resolved)
+            if clean_country:
+                country = clean_country
 
                 if country not in countries:
                     countries.append(country)
@@ -160,9 +125,9 @@ class Extractor:
 
         for place in places:
             for country in countries:
-                regions = self.get_region_names(country)
+                regions = self.pycountry_helper.get_region_names(country)
                 for region in regions:
-                    if self.region_match(place, region.name):
+                    if fuzzy_match(place, region.name):
                         if region not in found_regions:
                             found_regions.append(region)
                     else:
@@ -177,16 +142,24 @@ class Extractor:
         remaining_places = set()
         cities = []
         for place in places:
-            capitalised_place = f'"{self.capitalize_region_name(place)}"'
-            query = f'SELECT * FROM cities WHERE city_name = {capitalised_place}'
+            capitalised_place = f'"{capitalize_name(place)}"'
+            iso_codes = [country.iso_code for country in countries]
+            query = f'''
+                SELECT * FROM cities 
+                WHERE 
+                    city_name = {capitalised_place} 
+            '''
             cities_df = pd.read_sql(query, self.conn)
 
             found_cities = []
-            for i, row in cities_df.iterrows():
+            cities_in_countries = cities_df[cities_df.country_iso_code.isin(iso_codes)].copy()
+            cities_df = cities_df[~cities_df.city_name.isin(cities_in_countries.city_name.unique())]
+
+            for i, row in pd.concat([cities_in_countries, cities_df], axis=0).iterrows():
                 city_name = row.city_name
                 region_name = row.subdivision_name
 
-                country = Country(name=row.country_name)
+                country = Country(name=row.country_name, iso_code=row.country_iso_code)
                 if country not in countries:
                     countries.append(country)
 
@@ -211,44 +184,21 @@ class Extractor:
 
         return cities, remaining_places
 
-    def get_other(self, places, countries, regions, cities):
-        other = []
-        for place in places:
-            if self.is_unused(place, countries=countries, regions=regions, cities=cities):
-                other.append(place)
-        return other
-
     def extract_locations(self, text=None):
         places = self.extractor.find_entities(text)
 
-        place_context = Extractor()
-        countries, remaining_places = place_context.get_countries(places)
-        regions, remaining_places = place_context.get_regions(remaining_places, countries)
-        cities, remaining_places = place_context.get_cities(remaining_places, countries, regions)
-        # place_context.set_other()
+        countries, remaining_places = self.get_countries(places)
+        regions, remaining_places = self.get_regions(remaining_places, countries)
+        cities, remaining_places = self.get_cities(remaining_places, countries, regions)
 
         return countries, regions, cities, remaining_places
 
     def is_location(self, place: str):
-        place_context = Extractor()
-        countries, remaining_places = place_context.get_countries([place])
-        regions, remaining_places = place_context.get_regions(remaining_places, countries)
-        cities, remaining_places = place_context.get_cities(remaining_places, countries, regions)
+        countries, remaining_places = self.get_countries([place])
+        regions, remaining_places = self.get_regions(remaining_places, countries)
+        cities, remaining_places = self.get_cities(remaining_places, countries, regions)
 
         if cities or regions or countries:
             return True
         else:
             return False
-
-
-if __name__ == "__main__":
-    locations_extractor = Extractor()
-    countries, regions, cities, remaining_places = locations_extractor.extract_locations(
-        "living in")
-
-    pprint(countries)
-    pprint(regions)
-    pprint(cities)
-    pprint(remaining_places)
-
-    pprint(locations_extractor.is_location("berlin"))
