@@ -10,10 +10,9 @@ before_install:
   - pip freeze | xargs pip uninstall -y
   - pip install poetry==${POETRY_VERSION}
 install:
-  - poetry install
+  - pip install tox-travis
 script:
-  - pytest  # run tests
-  - poetry check  # validate `pyproject.toml`
+  - tox
 after_success:
   - pip install codecov
   - codecov  # submit coverage
