@@ -1,6 +1,6 @@
 import os
 
-from .geograpy_nltk import download_nltk
+from location_extractor.named_entity_recognition.geograpy_nltk import download_nltk
 
 download_nltk()
 

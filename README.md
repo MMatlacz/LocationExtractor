@@ -32,6 +32,5 @@ LocationExtractor uses the following excellent libraries:
 * [pycountry](https://pypi.python.org/pypi/pycountry) for country/region lookups
 
 LocationExtractor uses the following data sources:
-
-* [GeoLite2](http://dev.maxmind.com/geoip/geoip2/geolite2/) for city lookups
+* This product includes GeoLite2 data created by MaxMind, available from <a href="https://www.maxmind.com">https://www.maxmind.com</a>
 * [ISO3166ErrorDictionary](https://github.com/bodacea/countryname/blob/master/countryname/databases/ISO3166ErrorDictionary.csv) for common country mispellings _via [Sara-Jayne Terp](https://github.com/bodacea)_

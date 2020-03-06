@@ -1,7 +1,7 @@
 import pytest
 
-from location_extractor.extraction import NERExtractor
-from location_extractor.geograpy_nltk import download_nltk
+from location_extractor.named_entity_recognition.ner import NERExtractor
+from location_extractor.named_entity_recognition.geograpy_nltk import download_nltk
 from location_extractor.places import Extractor
 
 download_nltk()

@@ -1,94 +1,45 @@
-import csv
 import os
 import re
-import sqlite3
-from typing import List, Set, Tuple
+from typing import List, Set, Tuple, Optional
 
 import pandas as pd
 
 from location_extractor import src_dir
 from location_extractor.containers import Country, Region, City
-from location_extractor.extraction import NERExtractor
-from location_extractor.helpers import capitalize_name
-from location_extractor.pycountry_helper import PycountryHelper
+from location_extractor.helpers import capitalize_name, remove_accents
+from location_extractor.named_entity_recognition.ner import NERExtractor
 from location_extractor.utils import fuzzy_match
 
 
 class Extractor:
     def __init__(self):
-        self.conn = sqlite3.connect(os.path.join(src_dir, "data", "locs.db"))
-        if not self.db_has_data():
-            self.populate_db()
-
         self.extractor = NERExtractor()
+        locations_path = os.path.join(
+            src_dir, "data", "GeoLite2-City-CSV_20200303", "GeoLite2-City-Locations-en-processed.csv")
+        self.locations_data = pd.read_csv(locations_path)
 
-        self.pycountry_helper = PycountryHelper()
+    def is_a_country(self, name: str) -> bool:
+        name_clean = remove_accents(capitalize_name(name))
+        query = f"country_name == @name_clean"
+        countries_df = self.locations_data.query(query)
+        return not countries_df.empty
 
-    def populate_db(self):
-        cur = self.conn.cursor()
-        cur.execute("DROP TABLE IF EXISTS cities")
+    def places_by_name(self, place_name, column_name) -> pd.DataFrame:
+        capitalized_name = remove_accents(capitalize_name(place_name))
+        query = f"{column_name} == @place_name"
+        rows = self.locations_data.query(query)
+        if not rows.empty:
+            return rows
 
-        cur.execute(
-            """CREATE TABLE cities(
-                    geoname_id INTEGER, 
-                    continent_code TEXT, 
-                    continent_name TEXT, 
-                    country_iso_code TEXT, 
-                    country_name TEXT, 
-                    subdivision_iso_code TEXT, 
-                    subdivision_name TEXT, 
-                    city_name TEXT, 
-                    metro_code TEXT, 
-                    time_zone TEXT
-                )
-            """)
-        with open(src_dir + "/data/GeoLite2-City-Locations.csv", "r") as info:
-            reader = csv.reader(info)
-            for row in reader:
-                cur.execute("INSERT INTO cities VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?);", row)
+        return rows
 
-            self.conn.commit()
-
-    def db_has_data(self):
-        cur = self.conn.cursor()
-
-        cur.execute("SELECT Count(*) FROM sqlite_master WHERE name='cities';")
-        data = cur.fetchone()[0]
-
-        if data > 0:
-            cur.execute("SELECT Count(*) FROM cities")
-            data = cur.fetchone()[0]
-            return data > 0
-
-        return False
-
-    def is_a_country(self, country_name: str):
-        clean_country_name, _ = self.pycountry_helper.get_country_name_and_iso_code(country_name)
-
-        if clean_country_name:
-            return True
-        else:
-            query = f"SELECT * FROM cities WHERE country_name = '{capitalize_name(country_name)}'"
-            countries_df = pd.read_sql(query, self.conn)
-            return countries_df.shape[0] > 0
-
-    def places_by_name(self, place_name, column_name):
-        cur = self.conn.cursor()
-        # TODO: properly escape `column_name`
-        cur.execute(
-            f'SELECT * FROM cities WHERE {column_name} = ?',
-            (place_name,),
-        )
-        rows = list(cur.fetchall())
-        return rows or None
-
-    def cities_for_name(self, city_name):
+    def cities_for_name(self, city_name: str) -> Optional[pd.DataFrame]:
         return self.places_by_name(city_name, 'city_name')
 
-    def regions_for_name(self, region_name):
+    def regions_for_name(self, region_name: str) -> Optional[pd.DataFrame]:
         return self.places_by_name(region_name, 'subdivision_name')
 
-    def resolve_acronyms(self, place: str):
+    def resolve_acronyms(self, place: str) -> str:
         name = re.sub(
             r"(^|(?P<before>\S*)\s)(?:The\s+)?(?P<country>usa)($|\s(?P<after>\S*))",
             r"\g<before> United States \g<after>",
@@ -108,12 +59,17 @@ class Extractor:
         remaining_places = set()
         for i, original in enumerate(places):
             resolved = self.resolve_acronyms(original)
-            clean_country = self.pycountry_helper.get_country_name_and_iso_code(resolved)
-            if clean_country:
-                country = clean_country
+            name_clean = remove_accents(capitalize_name(resolved))
+            query = f"country_name == '{name_clean}'"
+            countries_df = self.locations_data.query(query)
 
-                if country not in countries:
-                    countries.append(country)
+            if not countries_df.empty:
+                for _, row in countries_df.iterrows():
+                    country_name = row['country_name']
+                    iso_code = row['country_iso_code']
+                    country = Country(name=country_name, iso_code=iso_code)
+                    if country not in countries:
+                        countries.append(country)
             else:
                 remaining_places.add(original)
 
@@ -125,9 +81,12 @@ class Extractor:
 
         for place in places:
             for country in countries:
-                regions = self.pycountry_helper.get_region_names(country)
-                for region in regions:
-                    if fuzzy_match(place, region.name):
+                name_clean = remove_accents(capitalize_name(country.name))
+                query = f"country_name == '{name_clean}'"
+                regions_df = self.locations_data.query(query)
+
+                for region in regions_df['subdivision_name'].unique():
+                    if fuzzy_match(place, region):
                         if region not in found_regions:
                             found_regions.append(region)
                     else:
@@ -142,14 +101,10 @@ class Extractor:
         remaining_places = set()
         cities = []
         for place in places:
-            capitalised_place = f'"{capitalize_name(place)}"'
             iso_codes = [country.iso_code for country in countries]
-            query = f'''
-                SELECT * FROM cities 
-                WHERE 
-                    city_name = {capitalised_place} 
-            '''
-            cities_df = pd.read_sql(query, self.conn)
+
+            query = f'city_name == "{capitalize_name(remove_accents(place))}"'
+            cities_df = self.locations_data.query(query)
 
             found_cities = []
             cities_in_countries = cities_df[cities_df.country_iso_code.isin(iso_codes)].copy()
@@ -193,7 +148,7 @@ class Extractor:
 
         return countries, regions, cities, remaining_places
 
-    def is_location(self, place: str):
+    def is_location(self, place: str) -> bool:
         countries, remaining_places = self.get_countries([place])
         regions, remaining_places = self.get_regions(remaining_places, countries)
         cities, remaining_places = self.get_cities(remaining_places, countries, regions)
