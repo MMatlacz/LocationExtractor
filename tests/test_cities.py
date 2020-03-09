@@ -1,7 +1,7 @@
 import pytest
 
 from location_extractor.containers import City
-from location_extractor.places import Extractor
+from location_extractor.extractor import Extractor
 
 
 @pytest.fixture()
@@ -39,9 +39,9 @@ def location_extractor():
     ]
 )
 def test_get_cities(places, expected_city, location_extractor):
-    countries, rest = location_extractor.get_countries(places)
-    regions, rest = location_extractor.get_regions(rest, countries)
-    cities, _ = location_extractor.get_cities(rest, countries, regions)
+    countries, rest = location_extractor.get_countries(places, continents=[])
+    regions, rest = location_extractor.get_regions(rest, continents=[], countries=countries)
+    cities, _ = location_extractor.get_cities(rest, continents=[], countries=countries, regions=regions)
 
     assert sorted(City.many_to_list(cities), key=lambda x: (x[2], x[1])) == expected_city
 
@@ -56,6 +56,6 @@ def test_get_cities(places, expected_city, location_extractor):
     ]
 )
 def test_extract_cities(places, expected_city, location_extractor):
-    cities, _ = location_extractor.get_cities(places, [], [])
+    cities, _ = location_extractor.get_cities(places, [], [], [])
 
-    assert City.many_to_list(cities) == expected_city
+    assert sorted(City.many_to_list(cities)) == sorted(expected_city)
