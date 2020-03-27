@@ -74,13 +74,13 @@ class Extractor:
 
     def places_by_name(self, place_name, column_name):
         cur = self.conn.cursor()
-        cur.execute(f"SELECT * FROM cities WHERE {column_name} = '{place_name}'")
-        rows = cur.fetchall()
-
-        if len(rows) > 0:
-            return rows
-
-        return None
+        # TODO: properly escape `column_name`
+        cur.execute(
+            f'SELECT * FROM cities WHERE {column_name} = ?',
+            (place_name,),
+        )
+        rows = list(cur.fetchall())
+        return rows or None
 
     def cities_for_name(self, city_name):
         return self.places_by_name(city_name, 'city_name')
