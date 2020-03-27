@@ -1,11 +1,14 @@
 import pytest
 
-from location_extractor.places import Extractor, Country, Region, City
+from location_extractor.places import (
+    City,
+    Country,
+    Region,
+)
 
 
-def test_kenya():
+def test_kenya(location_extractor):
     places = ['Ngong', 'Nairobi', 'Kenya']
-    location_extractor = Extractor()
 
     expected_country = Country(name="Kenya", iso_code='KE')
     countries, remaining_places = location_extractor.get_countries(places)
@@ -27,11 +30,9 @@ def test_kenya():
     assert cities[-1] == expected_city
 
 
-def test_syria():
+def test_syria(location_extractor):
     places = ['Aleppo', 'Syria']
-    location_extractor = Extractor()
     countries, remaining_places = location_extractor.get_countries(places)
-    print(countries)
     regions, remaining_places = location_extractor.get_regions(remaining_places, countries)
     cities, remaining_places = location_extractor.get_cities(remaining_places, countries, regions)
 
@@ -44,11 +45,6 @@ def test_syria():
 
     assert len(cities) == 1
     assert cities[-1] == expected_city
-
-
-@pytest.fixture()
-def location_extractor():
-    return Extractor()
 
 
 @pytest.mark.parametrize(
