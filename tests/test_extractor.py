@@ -1,12 +1,7 @@
 import pytest
 
 from location_extractor.containers import Continent
-from location_extractor.extractor import Extractor, Country, Region, City
-
-
-@pytest.fixture()
-def location_extractor():
-    return Extractor()
+from location_extractor.extractor import Country, Region, City
 
 
 def test_kenya(location_extractor):
@@ -85,7 +80,7 @@ def test_is_location(word, is_location, location_extractor):
     ]
 )
 def test_is_a_country(word, is_country, location_extractor):
-    assert location_extractor.is_a_country(word) is is_country
+    assert location_extractor.is_country(word) is is_country
 
 
 @pytest.mark.parametrize(

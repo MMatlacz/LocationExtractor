@@ -2,8 +2,6 @@ from typing import List
 
 import nltk
 
-from location_extractor.helpers import capitalize_name
-
 
 class NERExtractor:
     @classmethod
@@ -16,7 +14,6 @@ class NERExtractor:
             if type(named_entity) is nltk.tree.Tree:
                 if named_entity.label() in {'GPE', 'PERSON', 'ORGANIZATION'}:
                     found_place = ' '.join([leaf[0] for leaf in named_entity.leaves()])
-                    places.append(found_place)
+                    places.append(found_place.strip())
 
-        places = list(map(capitalize_name, places))
         return places

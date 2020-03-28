@@ -6,24 +6,40 @@ import pandas as pd
 
 from location_extractor import src_dir
 from location_extractor.containers import Country, Region, City, Continent
-from location_extractor.helpers import capitalize_name, remove_accents
+from location_extractor.helpers import remove_accents, parse_query_param
 from location_extractor.named_entity_recognition.ner import NERExtractor
 
 
 class Extractor:
-    def __init__(self):
+    sublocation_pattern = re.compile(
+        r"\s*(west|south|north|east)(ern)?\s*",
+        re.IGNORECASE
+    )
+    clean_acronym_pattern = re.compile(
+        r"(^|\s)(the)(\s|$)", flags=re.IGNORECASE
+    )
+
+    def __init__(self) -> None:
         self.extractor = NERExtractor()
         locations_path = os.path.join(
             src_dir, "data", "GeoLite2-City-CSV_20200303", "GeoLite2-City-Locations-en-processed.csv")
-        self.locations_data = pd.read_csv(locations_path)
+        self.locations_data: pd.DataFrame = pd.read_csv(locations_path)
+
+        for col in self.locations_data.select_dtypes(include=['object', 'string']):
+            self.locations_data[f'{col}_lowercase'] = self.locations_data[col].str.lower()
+
+        self.acronyms_mapping = {
+            "UK": "United Kingdom",
+            "USA": "United States",
+        }
+
+    def build_query(self, column: str, value: str):
+        return f"{column}_lowercase == '{parse_query_param(value)}'"
 
     def places_by_name(self, place_name, column_name) -> Optional[pd.DataFrame]:
-        query = f"{column_name} = '{remove_accents(capitalize_name(place_name))}'"
+        query = self.build_query(column_name, place_name)
         rows = self.locations_data.query(query)
-        if not rows.empty:
-            return rows
-
-        return None
+        return rows if not rows.empty else None
 
     def cities_for_name(self, city_name: str) -> Optional[pd.DataFrame]:
         return self.places_by_name(city_name, 'city_name')
@@ -35,8 +51,7 @@ class Extractor:
         continents = set()
         remaining_places = set()
         for place in places:
-            name_clean = remove_accents(capitalize_name(place))
-            continent_query = f"continent_name == '{name_clean}'"
+            continent_query = self.build_query('continent_name', place)
             continents_df = self.locations_data.query(continent_query)
 
             potential_continents = Continent.from_dicts(continents_df.to_dict("records"))
@@ -52,14 +67,10 @@ class Extractor:
         countries = set()
         remaining_places = set()
         for place in places:
-            resolved = self.find_acronym(place)
-            if resolved:
-                name_clean = remove_accents(capitalize_name(resolved))
-            else:
-                name_clean = remove_accents(capitalize_name(place))
+            resolved = self.resolve_acronym(place)
 
-            query = f"country_name == '{name_clean}'"
-            countries_df = self.locations_data.query(query)
+            country_query = self.build_query('country_name', resolved or place)
+            countries_df = self.locations_data.query(country_query)
 
             potential_countries = Country.from_dicts(countries_df.to_dict("records"))
 
@@ -80,9 +91,8 @@ class Extractor:
         remaining_places = set()
 
         for place in places:
-            name_clean = remove_accents(capitalize_name(place))
-            query = f"subdivision_name == '{name_clean}'"
-            regions_df = self.locations_data.query(query)
+            subdivision_query = self.build_query('subdivision_name', place)
+            regions_df = self.locations_data.query(subdivision_query)
 
             potential_regions = Region.from_dicts(regions_df.to_dict("records"))
 
@@ -105,9 +115,9 @@ class Extractor:
         remaining_places = set()
         cities = set()
         for place in places:
-            query = f'city_name == "{capitalize_name(remove_accents(place))}"'
-            cities_df = self.locations_data.query(query)
+            city_query = self.build_query('city_name', place)
 
+            cities_df = self.locations_data.query(city_query)
             potential_cities = City.from_dicts(cities_df.to_dict("records"))
 
             cities_in_regions = [city for city in potential_cities if city.region in regions]
@@ -127,34 +137,30 @@ class Extractor:
 
         return list(cities), remaining_places
 
-    def find_acronym(self, name):
-        name_clean = remove_accents(name).upper()
-        name_clean = re.sub(r"(^|\s)(the)(\s|$)", "", name_clean, flags=re.IGNORECASE)
-        if name_clean == "UK":
-            name_clean = "GB"
-        elif name_clean == "USA":
-            name_clean = "US"
-        query = f"country_iso_code == '{name_clean}'"
-        countries_df = self.locations_data.query(query)
-        if not countries_df.empty:
-            return countries_df['country_name'].drop_duplicates().iloc[0]
+    def resolve_acronym(self, name) -> Optional[str]:
+        name_clean = remove_accents(name)
+        name_clean = self.clean_acronym_pattern.sub("", name_clean)
+        name_upper = name_clean.upper()
+        resolved: Optional[str] = self.acronyms_mapping.get(name_upper)
+        if not resolved:
+            country_iso_query = self.build_query('country_iso_code', name_clean)
+            countries_df = self.locations_data.query(country_iso_query)
+            if not countries_df.empty:
+                resolved: str = countries_df['country_name'].drop_duplicates().iloc[0]
+        return resolved
 
-    def is_a_country(self, name: str) -> bool:
+    def is_country(self, name: str) -> bool:
         countries, remaining_places = self.get_countries([name], [])
         return name not in remaining_places
 
     def is_location(self, place: str) -> bool:
         continents, countries, regions, cities = self.find_locations([place])
 
-        if cities or regions or countries:
-            return True
-        else:
-            return False
+        return bool(cities or regions or countries)
 
     def clean_sublocations(self, places):
-        pattern = re.compile(r"(west|south|north|east)(ern)?", re.IGNORECASE)
         for place in places:
-            yield pattern.sub("", place)
+            yield self.sublocation_pattern.sub("", place)
 
     def extract_places(self, text=None):
         places = self.extractor.find_entities(text)
@@ -167,12 +173,12 @@ class Extractor:
         regions, remaining_places = self.get_regions(remaining_places, continents, countries)
         cities, remaining_places = self.get_cities(remaining_places, continents, countries, regions)
 
-        continents = sorted(continents)
-        countries = sorted(countries)
-        regions = sorted(regions)
-        cities = sorted(cities)
-
-        return continents, countries, regions, cities
+        return (
+            sorted(continents),
+            sorted(countries),
+            sorted(regions),
+            sorted(cities)
+        )
 
     def extract_locations(self, text=None, return_strings=False):
         places = self.extract_places(text)

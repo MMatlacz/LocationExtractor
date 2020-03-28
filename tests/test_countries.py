@@ -1,12 +1,6 @@
 import pytest
 
 from location_extractor.containers import Country
-from location_extractor.extractor import Extractor
-
-
-@pytest.fixture()
-def location_extractor():
-    return Extractor()
 
 
 @pytest.mark.parametrize(
