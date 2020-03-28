@@ -1,10 +1,6 @@
 import pytest
 
-from location_extractor.places import (
-    City,
-    Country,
-    Region,
-)
+from location_extractor.places import City, Country, Region
 
 
 def test_kenya(location_extractor):

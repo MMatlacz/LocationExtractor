@@ -2,12 +2,13 @@ import csv
 import os
 import re
 import sqlite3
+
 from typing import List, Set, Tuple
 
 import pandas as pd
 
 from location_extractor import src_dir
-from location_extractor.containers import Country, Region, City
+from location_extractor.containers import City, Country, Region
 from location_extractor.extraction import NERExtractor
 from location_extractor.helpers import capitalize_name
 from location_extractor.pycountry_helper import PycountryHelper
