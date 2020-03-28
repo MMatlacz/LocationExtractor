@@ -1,12 +1,13 @@
 import os
 import re
-from typing import List, Set, Tuple, Optional
+
+from typing import List, Optional, Set, Tuple
 
 import pandas as pd
 
 from location_extractor import src_dir
-from location_extractor.containers import Country, Region, City, Continent
-from location_extractor.helpers import remove_accents, parse_query_param
+from location_extractor.containers import City, Continent, Country, Region
+from location_extractor.helpers import parse_query_param, remove_accents
 from location_extractor.named_entity_recognition.ner import NERExtractor
 
 

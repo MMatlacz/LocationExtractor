@@ -1,6 +1,7 @@
+import abc
+
 from dataclasses import dataclass
 from typing import List, Optional
-import abc
 
 
 class Entity(abc.ABC):

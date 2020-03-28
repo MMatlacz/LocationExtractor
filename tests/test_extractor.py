@@ -1,7 +1,7 @@
 import pytest
 
 from location_extractor.containers import Continent
-from location_extractor.extractor import Country, Region, City
+from location_extractor.extractor import City, Country, Region
 
 
 def test_kenya(location_extractor):
