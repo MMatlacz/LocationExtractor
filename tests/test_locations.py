@@ -12,4 +12,4 @@ def test_issue8_single_quote_in_place_name(
         name,
         column_name,
 ):
-    assert location_extractor.places_by_name(name, column_name) is not None
+    assert location_extractor.places_by_name(name, column_name)

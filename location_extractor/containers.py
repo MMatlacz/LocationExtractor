@@ -2,25 +2,27 @@ from dataclasses import dataclass
 from typing import List, Optional
 import abc
 
+from location_extractor.clients import LocationDTO
+
 
 class Entity(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def from_dict(cls, **kwargs):
+    def from_dto(cls, dto: LocationDTO):
         """
         Convert dictionary to Entity
-        :param kwargs: values for Entity fields
+        :param dto: LocationDTO
         :return: Entity
         """
 
     @classmethod
-    def from_dicts(cls, dictionaries: List[dict]):
+    def from_dtos(cls, dtos: List[LocationDTO]):
         """
         Convert list of dictionaries to a list of entities
-        :param dictionaries: List[dict]
+        :param dtos: List[LocationDTO]
         :return: List[Entity]
         """
-        return [cls.from_dict(**dictionary) for dictionary in dictionaries]
+        return [cls.from_dto(dto) for dto in dtos]
 
     @classmethod
     def many_to_string(cls, entities: List):
@@ -42,9 +44,9 @@ class Continent(Entity):
         return [continent.name for continent in continents]
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    def from_dto(cls, dto: LocationDTO):
         return cls(
-            name=kwargs["continent_name"]
+            name=dto.continent_name
         )
 
 
@@ -65,11 +67,11 @@ class Country(Entity):
         return [country.name for country in countries]
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    def from_dto(cls, dto: LocationDTO):
         return cls(
-            name=kwargs["country_name"],
-            iso_code=kwargs["country_iso_code"],
-            continent=Continent.from_dict(**kwargs)
+            name=dto.country_name,
+            iso_code=dto.country_iso_code,
+            continent=Continent.from_dto(dto)
         )
 
 
@@ -89,10 +91,10 @@ class Region(Entity):
         return [region.name for region in regions]
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    def from_dto(cls, dto: LocationDTO):
         return cls(
-            name=kwargs["subdivision_name"],
-            country=Country.from_dict(**kwargs)
+            name=dto.subdivision_name,
+            country=Country.from_dto(dto)
         )
 
 
@@ -113,9 +115,9 @@ class City(Entity):
         return [(city.name, city.region.name, city.country.name) for city in cities]
 
     @classmethod
-    def from_dict(cls, **kwargs):
+    def from_dto(cls, dto: LocationDTO):
         return cls(
-            name=kwargs["city_name"],
-            region=Region.from_dict(**kwargs),
-            country=Country.from_dict(**kwargs)
+            name=dto.city_name,
+            region=Region.from_dto(dto),
+            country=Country.from_dto(dto)
         )
