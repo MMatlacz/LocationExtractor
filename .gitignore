@@ -10,3 +10,4 @@ venv
 
 *.ipynb
 scripts
+*.db

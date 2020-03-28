@@ -7,7 +7,6 @@ authors = []
 license = "MIT"
 include = [
     "location_extractor/data/*.csv",
-    "location_extractor/data/*.db",
 ]
 readme = "README.md"
 repository = "https://github.com/MMatlacz/LocationExtractor"
