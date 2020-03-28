@@ -1,13 +1,12 @@
 import os
 import sqlite3
 from dataclasses import dataclass
-from sqlite3 import Cursor
+from sqlite3 import Cursor, Connection
 from typing import List, Tuple, Union, Optional
-
-import pandas as pd
 
 from location_extractor import src_dir
 from location_extractor.helpers import remove_accents
+import csv
 
 
 @dataclass(frozen=True, order=True)
@@ -69,32 +68,48 @@ class DBClient:
 
                 locations_path = os.path.join(
                     src_dir, "data", "GeoLite2-City-CSV_20200303", "GeoLite2-City-Locations-en-processed.csv")
-                locations_data: pd.DataFrame = pd.read_csv(
-                    locations_path,
-                    dtype={
-                        'locale_code': 'string',
-                        'continent_code': 'string',
-                        'continent_name': 'string',
-                        'country_iso_code': 'string',
-                        'country_name': 'string',
-                        'subdivision_name': 'string',
-                        'city_name': 'string',
-                        'is_in_european_union': 'bool'
-                    }
+
+                locations_data = []
+                with open(locations_path, 'r') as locations_file:
+                    reader = csv.reader(locations_file, delimiter=',')
+                    columns = next(reader)
+                    for i in range(len(columns) - 1):
+                        columns.append(f'{col}_lowercase')
+
+                    for row in reader:
+                        locale_code = row[0] or ''
+                        continent_code = row[1] or ''
+                        continent_name = row[2] or ''
+                        country_iso_code = row[3] or ''
+                        country_name = row[4] or ''
+                        subdivision_name = row[5] or ''
+                        city_name = row[6] or ''
+                        is_in_european_union = True if row[7] == 'True' else False
+                        locations_data.append((
+                            locale_code,
+                            continent_code,
+                            continent_name,
+                            country_iso_code,
+                            country_name,
+                            subdivision_name,
+                            city_name,
+                            is_in_european_union,
+                            locale_code.lower(),
+                            continent_code.lower(),
+                            continent_name.lower(),
+                            country_iso_code.lower(),
+                            country_name.lower(),
+                            subdivision_name.lower(),
+                            city_name.lower(),
+                        ))
+
+                conn.executemany(
+                    '''
+                        INSERT INTO locations 
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                    ''',
+                    locations_data
                 )
-
-                for col in locations_data.select_dtypes(include=['object', 'string']):
-                    locations_data[col].fillna('', inplace=True)
-                    locations_data[f'{col}_lowercase'] = locations_data[col].str.lower()
-
-                for row in locations_data.itertuples(index=False, name=None):
-                    conn.execute(
-                        '''
-                            INSERT INTO locations 
-                            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                        ''',
-                        row
-                    )
 
         self.default_columns = [
             'locale_code',
@@ -114,7 +129,7 @@ class DBClient:
 
     def fetch_all_raw(self, column_name: str, value: Union[str, List[str]],
                       columns: Union[List[str], str] = None) -> List[Tuple]:
-        with self.connect() as conn:
+        with self.connect() as conn:  # type: Connection
             if isinstance(value, str):
                 value = remove_accents(value.lower())
             else:
