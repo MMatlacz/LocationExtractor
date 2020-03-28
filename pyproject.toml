@@ -22,6 +22,7 @@ nltk = "^3.4.5"
 jellyfish = "^0.7.2"
 pycountry = "^19.8.18"
 pandas = "^1.0.3"
+Unidecode = "^1.1.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.1"
