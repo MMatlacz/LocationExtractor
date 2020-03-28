@@ -7,11 +7,11 @@ from location_extractor.extractor import Extractor
 download_nltk()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def location_extractor():
     return Extractor()
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def ner_extractor():
     return NERExtractor()
