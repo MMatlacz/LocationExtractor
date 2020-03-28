@@ -29,6 +29,7 @@ pytest-cov = "^2.8.1"
 ipython = "^7.13.0"
 isort = "^4.3.21"
 pytest-isort = "^0.3.1"
+wily = "^1.16.0"
 
 [build-system]
 requires = ["poetry>=1.0.0"]
