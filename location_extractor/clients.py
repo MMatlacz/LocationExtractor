@@ -23,20 +23,47 @@ class LocationDTO:
 
 class DBClient:
     def __init__(self) -> None:
-        self.dbpath = os.path.join(src_dir, "data", "data.db")
+        self.dbpath = os.path.join(src_dir, 'data', 'data.db')
+        self.locations_path = os.path.join(
+            src_dir,
+            'data',
+            'GeoLite2-City-CSV_20200303',
+            'GeoLite2-City-Locations-en-processed.csv'
+        )
 
-        self.index_columns = [
+        self.index_columns = (
             'continent_name',
             'country_iso_code',
             'country_name',
             'subdivision_name',
             'city_name',
-        ]
+        )
 
-        with self.connect() as conn:
-            table_exists = conn.execute("""
-                SELECT name FROM sqlite_master WHERE type='table' AND name='locations';
-            """).fetchone()
+        self.default_columns = (
+            'locale_code',
+            'continent_code',
+            'continent_name',
+            'country_iso_code',
+            'country_name',
+            'subdivision_name',
+            'city_name',
+            'is_in_european_union',
+        )
+
+        self.columns = ','.join(self.default_columns)
+
+        self.populate_locations_table()
+
+    def populate_locations_table(self) -> None:
+        with self.connection as conn:
+            table_exists = conn.execute('''
+                SELECT 
+                    name 
+                FROM 
+                    sqlite_master 
+                WHERE 
+                    type='table' AND name='locations';
+            ''').fetchone()
 
             if not table_exists:
                 conn.execute('''
@@ -61,192 +88,128 @@ class DBClient:
                     ''')
 
                 for col in self.index_columns:
-                    conn.execute(f'''
-                        CREATE INDEX {col} 
-                        ON locations({col}_lowercase);
-                    ''')
-
-                locations_path = os.path.join(
-                    src_dir, "data", "GeoLite2-City-CSV_20200303", "GeoLite2-City-Locations-en-processed.csv")
+                    column_name = f'{col}_lowercase'
+                    conn.execute(f'CREATE INDEX {col} ON locations({column_name});')
 
                 locations_data = []
-                with open(locations_path, 'r') as locations_file:
+                with open(self.locations_path, 'r') as locations_file:
                     reader = csv.reader(locations_file, delimiter=',')
                     columns = next(reader)
                     for i in range(len(columns) - 1):
                         columns.append(f'{col}_lowercase')
 
                     for row in reader:
-                        locale_code = row[0] or ''
-                        continent_code = row[1] or ''
-                        continent_name = row[2] or ''
-                        country_iso_code = row[3] or ''
-                        country_name = row[4] or ''
-                        subdivision_name = row[5] or ''
-                        city_name = row[6] or ''
+                        str_values = [value or '' for value in row[:7]]
                         is_in_european_union = True if row[7] == 'True' else False
                         locations_data.append((
-                            locale_code,
-                            continent_code,
-                            continent_name,
-                            country_iso_code,
-                            country_name,
-                            subdivision_name,
-                            city_name,
+                            *str_values,
                             is_in_european_union,
-                            locale_code.lower(),
-                            continent_code.lower(),
-                            continent_name.lower(),
-                            country_iso_code.lower(),
-                            country_name.lower(),
-                            subdivision_name.lower(),
-                            city_name.lower(),
+                            *(value.lower() for value in str_values)
                         ))
 
                 conn.executemany(
-                    '''
-                        INSERT INTO locations 
-                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-                    ''',
+                    'INSERT INTO locations VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)',
                     locations_data
                 )
 
-        self.default_columns = [
-            'locale_code',
-            'continent_code',
-            'continent_name',
-            'country_iso_code',
-            'country_name',
-            'subdivision_name',
-            'city_name',
-            'is_in_european_union',
-        ]
-
-        self.columns = ','.join(self.default_columns)
-
-    def connect(self):
+    @property
+    def connection(self) -> sqlite3.Connection:
         return sqlite3.connect(self.dbpath)
 
-    def fetch_all_raw(self, column_name: str, value: Union[str, List[str]],
-                      columns: Union[List[str], str] = None) -> List[Tuple]:
-        with self.connect() as conn:  # type: Connection
-            if isinstance(value, str):
-                value = remove_accents(value.lower())
-            else:
-                value = [remove_accents(val.lower()) for val in value]
+    @staticmethod
+    def parse_values(value: Union[str, List[str]]) -> Union[str, List[str]]:
+        if isinstance(value, str):
+            value = remove_accents(value.lower())
+        else:
+            value = [remove_accents(val.lower()) for val in value]
+        return value
 
-            if not columns:
-                selected_columns = self.columns
-            elif isinstance(columns, str):
-                selected_columns = columns
-            else:
-                selected_columns = ','.join(columns)
+    def parse_columns(self, columns):
+        if not columns:
+            selected_columns = self.columns
+        elif isinstance(columns, str):
+            selected_columns = columns
+        else:
+            selected_columns = ','.join(columns)
+        return selected_columns
 
-            column_name = f'{column_name}_lowercase'
-            if isinstance(value, str):
-                cursor: Cursor = conn.execute(
-                    f'''
-                        SELECT DISTINCT {selected_columns} FROM 
+    @staticmethod
+    def query(column_name: str, columns: str, conn: sqlite3.Connection, value: str):
+        cursor: Cursor = conn.execute(
+            f'''
+                        SELECT DISTINCT 
+                            {columns} 
+                        FROM 
                             locations 
                         WHERE 
                             {column_name}=?
                     ''',
-                    (value,)
-                )
-            else:
-                cursor: Cursor = conn.execute(
-                    f'''
-                        SELECT DISTINCT {selected_columns} FROM 
+            (value,)
+        )
+        return cursor
+
+    @staticmethod
+    def query_in(column_name: str, columns: str, conn: sqlite3.Connection, value: List[str]):
+        cursor: Cursor = conn.execute(
+            f'''
+                        SELECT DISTINCT 
+                            {columns} 
+                        FROM 
                             locations 
                         WHERE 
-                            {column_name} IN ({",".join("?" * len(value))})
+                            {column_name} IN ({','.join('?' * len(value))})
                     ''',
-                    value
-                )
+            value
+        )
+        return cursor
+
+    def fetch_all_raw(self, column_name: str, value: Union[str, List[str]],
+                      columns: Union[List[str], str] = None) -> List[Tuple]:
+        with self.connection as conn:  # type: Connection
+            value = self.parse_values(value)
+            columns = self.parse_columns(columns)
+
+            column_name = f'{column_name}_lowercase'
+            if isinstance(value, str):
+                cursor = self.query(column_name, columns, conn, value)
+            else:
+                cursor = self.query_in(column_name, columns, conn, value)
 
             records = cursor.fetchall()
             return records
 
     def fetch_all(self, column_name: str, value: Union[str, List[str]]) -> List[LocationDTO]:
-        with self.connect() as conn:
-            if isinstance(value, str):
-                value = remove_accents(value.lower())
-            else:
-                value = [remove_accents(val.lower()) for val in value]
+        with self.connection as conn:
+            value = self.parse_values(value)
 
             column_name = f'{column_name}_lowercase'
             if isinstance(value, str):
-                cursor: Cursor = conn.execute(
-                    f'''
-                        SELECT {self.columns} FROM 
-                            locations 
-                        WHERE 
-                            {column_name}=?
-                    ''',
-                    (value,)
-                )
+                cursor = self.query(column_name, self.columns, conn, value)
             else:
-                cursor: Cursor = conn.execute(
-                    f'''
-                        SELECT {self.columns} FROM 
-                            locations 
-                        WHERE 
-                            {column_name} IN ({",".join("?" * len(value))})
-                    ''',
-                    value
-                )
+                cursor = self.query_in(column_name, self.columns, conn, value)
 
             records = cursor.fetchall()
             return [LocationDTO(*record) for record in records]
 
     def fetch_one_raw(self, column_name: str, value: str,
                       columns: Optional[Union[List[str], str]] = None) -> Optional[Tuple]:
-        with self.connect() as conn:
-            if isinstance(value, str):
-                value = remove_accents(value.lower())
-
-            if columns and isinstance(columns, list):
-                columns = ",".join(columns)
-            elif not columns:
-                columns = self.columns
+        with self.connection as conn:
+            value = self.parse_values(value)
+            columns = self.parse_columns(columns)
 
             column_name = f'{column_name}_lowercase'
-
-            cursor: Cursor = conn.execute(
-                f'''
-                    SELECT DISTINCT {columns} FROM 
-                        locations 
-                    WHERE 
-                        {column_name}=?
-                ''',
-                (value,)
-            )
+            cursor = self.query(column_name, columns, conn, value)
 
             records = cursor.fetchone()
-            if records:
-                return records
-            else:
-                return None
+            return records
 
     def fetch_one(self, column_name: str, value: str) -> Optional[LocationDTO]:
-        with self.connect() as conn:
+        with self.connection as conn:
             if isinstance(value, str):
                 value = remove_accents(value.lower())
 
             column_name = f'{column_name}_lowercase'
-
-            cursor: Cursor = conn.execute(
-                f'''
-                    SELECT DISTINCT {self.columns} FROM 
-                        locations 
-                    WHERE 
-                        {column_name}=?
-                ''',
-                (value,)
-            )
+            cursor = self.query(column_name, self.columns, conn, value)
 
             records: Tuple = cursor.fetchone()
-            if records:
-                return LocationDTO(*records)
-            else:
-                return None
+            return LocationDTO(*records) if records else None

@@ -1,6 +1,6 @@
+import abc
 from dataclasses import dataclass
 from typing import List, Optional
-import abc
 
 from location_extractor.clients import LocationDTO
 
@@ -8,7 +8,7 @@ from location_extractor.clients import LocationDTO
 class Entity(abc.ABC):
     @classmethod
     @abc.abstractmethod
-    def from_dto(cls, dto: LocationDTO):
+    def from_dto(cls, dto: LocationDTO) -> 'Entity':
         """
         Create ``Entity`` instance from ``LocationDTO``.
         :param dto: LocationDTO
@@ -16,16 +16,14 @@ class Entity(abc.ABC):
         """
 
     @classmethod
-    def from_dtos(cls, dtos: List[LocationDTO]):
+    @abc.abstractmethod
+    def from_dtos(cls, dtos: List[LocationDTO]) -> List['Entity']:
         """
         Convert list of dictionaries to a list of entities
-        :param dtos: List[LocationDTO]
-        :return: List[Entity]
         """
-        return [cls.from_dto(dto) for dto in dtos]
 
     @classmethod
-    def many_to_string(cls, entities: List):
+    def many_to_string(cls, entities: List['Entity']) -> List[str]:
         return [str(entity) for entity in entities]
 
 
@@ -40,14 +38,14 @@ class Continent(Entity):
         return self.name
 
     @classmethod
-    def many_to_list(cls, continents: List):
-        return [continent.name for continent in continents]
-
-    @classmethod
-    def from_dto(cls, dto: LocationDTO):
+    def from_dto(cls, dto: LocationDTO) -> 'Continent':
         return cls(
             name=dto.continent_name
         )
+
+    @classmethod
+    def from_dtos(cls, dtos: List[LocationDTO]) -> List['Continent']:
+        return [cls.from_dto(dto) for dto in dtos]
 
 
 @dataclass(frozen=True, eq=True)
@@ -60,19 +58,19 @@ class Country(Entity):
         return (self.continent, self.name) < (other.continent, other.name)
 
     def __str__(self) -> str:
-        return self.name
+        return f'{self.name}, {self.continent}'
 
     @classmethod
-    def many_to_list(cls, countries: List):
-        return [country.name for country in countries]
-
-    @classmethod
-    def from_dto(cls, dto: LocationDTO):
+    def from_dto(cls, dto: LocationDTO) -> 'Country':
         return cls(
             name=dto.country_name,
             iso_code=dto.country_iso_code,
             continent=Continent.from_dto(dto)
         )
+
+    @classmethod
+    def from_dtos(cls, dtos: List[LocationDTO]) -> List['Country']:
+        return [cls.from_dto(dto) for dto in dtos]
 
 
 @dataclass(frozen=True, eq=True)
@@ -84,18 +82,18 @@ class Region(Entity):
         return (self.country, self.name) < (other.country, other.name)
 
     def __str__(self) -> str:
-        return f'{self.name}, {self.country.name}'
+        return f'{self.name}, {self.country}'
 
     @classmethod
-    def many_to_list(cls, regions: List):
-        return [region.name for region in regions]
-
-    @classmethod
-    def from_dto(cls, dto: LocationDTO):
+    def from_dto(cls, dto: LocationDTO) -> 'Region':
         return cls(
             name=dto.subdivision_name,
             country=Country.from_dto(dto)
         )
+
+    @classmethod
+    def from_dtos(cls, dtos: List[LocationDTO]) -> List['Region']:
+        return [cls.from_dto(dto) for dto in dtos]
 
 
 @dataclass(frozen=True, eq=True)
@@ -107,17 +105,17 @@ class City(Entity):
     def __lt__(self, other):
         return (self.country, self.region, self.name) < (other.country, other.region, other.name)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.name}, {self.region}'
 
     @classmethod
-    def many_to_list(cls, cities: List):
-        return [(city.name, city.region.name, city.country.name) for city in cities]
-
-    @classmethod
-    def from_dto(cls, dto: LocationDTO):
+    def from_dto(cls, dto: LocationDTO) -> 'City':
         return cls(
             name=dto.city_name,
             region=Region.from_dto(dto),
             country=Country.from_dto(dto)
         )
+
+    @classmethod
+    def from_dtos(cls, dtos: List[LocationDTO]) -> List['City']:
+        return [cls.from_dto(dto) for dto in dtos]
