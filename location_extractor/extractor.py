@@ -1,6 +1,8 @@
 import re
 
-from typing import Final, Generator, Iterable, List, Optional, Set, Tuple
+from typing import Generator, Iterable, List, Optional, Set, Tuple
+
+from typing_extensions import Final
 
 from location_extractor.clients import DBClient, LocationDTO
 from location_extractor.containers import City, Continent, Country, Region

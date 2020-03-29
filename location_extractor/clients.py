@@ -5,12 +5,14 @@ import sqlite3
 from dataclasses import dataclass
 from typing import Iterable, List, Optional, Tuple, Union
 
+from typing_extensions import Final
+
 from location_extractor import src_dir
 from location_extractor.utils import remove_accents
 
 StringOrIterableOfStrings = Union[str, Iterable[str]]
-COMMA = ','
-LOWERCASE_COLUMN_SUFFIX = '_lowercase'
+COMMA: Final = ','
+LOWERCASE_COLUMN_SUFFIX: Final = '_lowercase'
 
 
 @dataclass(frozen=True, order=True)
