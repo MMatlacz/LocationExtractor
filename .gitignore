@@ -7,3 +7,6 @@ venv
 .python-version
 .tox/
 .tests_reports/*
+*.ipynb
+scripts
+*.db

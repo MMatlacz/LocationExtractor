@@ -7,7 +7,6 @@ authors = []
 license = "MIT"
 include = [
     "location_extractor/data/*.csv",
-    "location_extractor/data/*.db",
 ]
 readme = "README.md"
 repository = "https://github.com/MMatlacz/LocationExtractor"
@@ -21,7 +20,6 @@ numpy = "^1.18.2"
 nltk = "^3.4.5"
 jellyfish = "^0.7.2"
 pycountry = "^19.8.18"
-pandas = "^1.0.3"
 Unidecode = "^1.1.1"
 
 [tool.poetry.dev-dependencies]

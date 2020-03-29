@@ -1,5 +1,3 @@
-import re
-
 from unidecode import unidecode_expect_nonascii
 
 

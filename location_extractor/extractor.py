@@ -1,13 +1,10 @@
-import os
 import re
 
 from typing import List, Optional, Set, Tuple
 
-import pandas as pd
-
-from location_extractor import src_dir
+from location_extractor.clients import DBClient, LocationDTO
 from location_extractor.containers import City, Continent, Country, Region
-from location_extractor.helpers import parse_query_param, remove_accents
+from location_extractor.helpers import remove_accents
 from location_extractor.named_entity_recognition.ner import NERExtractor
 
 
@@ -22,40 +19,31 @@ class Extractor:
 
     def __init__(self) -> None:
         self.extractor = NERExtractor()
-        locations_path = os.path.join(
-            src_dir, "data", "GeoLite2-City-CSV_20200303", "GeoLite2-City-Locations-en-processed.csv")
-        self.locations_data: pd.DataFrame = pd.read_csv(locations_path)
 
-        for col in self.locations_data.select_dtypes(include=['object', 'string']):
-            self.locations_data[f'{col}_lowercase'] = self.locations_data[col].str.lower()
+        self.dbclient = DBClient()
 
         self.acronyms_mapping = {
             "UK": "United Kingdom",
             "USA": "United States",
         }
 
-    def build_query(self, column: str, value: str):
-        return f"{column}_lowercase == '{parse_query_param(value)}'"
+    def places_by_name(self, place_name, column_name) -> List[LocationDTO]:
+        rows = self.dbclient.fetch_all(column_name, place_name)
+        return rows
 
-    def places_by_name(self, place_name, column_name) -> Optional[pd.DataFrame]:
-        query = self.build_query(column_name, place_name)
-        rows = self.locations_data.query(query)
-        return rows if not rows.empty else None
-
-    def cities_for_name(self, city_name: str) -> Optional[pd.DataFrame]:
+    def cities_for_name(self, city_name: str) -> List[LocationDTO]:
         return self.places_by_name(city_name, 'city_name')
 
-    def regions_for_name(self, region_name: str) -> Optional[pd.DataFrame]:
+    def regions_for_name(self, region_name: str) -> List[LocationDTO]:
         return self.places_by_name(region_name, 'subdivision_name')
 
     def get_continents(self, places) -> Tuple[List[Continent], Set[str]]:
         continents = set()
         remaining_places = set()
         for place in places:
-            continent_query = self.build_query('continent_name', place)
-            continents_df = self.locations_data.query(continent_query)
+            continents_dto = self.dbclient.fetch_all('continent_name', place)
 
-            potential_continents = Continent.from_dicts(continents_df.to_dict("records"))
+            potential_continents = Continent.from_dtos(continents_dto)
 
             if potential_continents:
                 continents = continents.union(potential_continents)
@@ -69,11 +57,9 @@ class Extractor:
         remaining_places = set()
         for place in places:
             resolved = self.resolve_acronym(place)
+            countries_dto = self.dbclient.fetch_all('country_name', resolved or place)
 
-            country_query = self.build_query('country_name', resolved or place)
-            countries_df = self.locations_data.query(country_query)
-
-            potential_countries = Country.from_dicts(countries_df.to_dict("records"))
+            potential_countries = Country.from_dtos(countries_dto)
 
             countries_on_continents = [country for country in potential_countries if country.continent in continents]
 
@@ -92,10 +78,9 @@ class Extractor:
         remaining_places = set()
 
         for place in places:
-            subdivision_query = self.build_query('subdivision_name', place)
-            regions_df = self.locations_data.query(subdivision_query)
+            regions_dto = self.dbclient.fetch_all('subdivision_name', place)
 
-            potential_regions = Region.from_dicts(regions_df.to_dict("records"))
+            potential_regions = Region.from_dtos(regions_dto)
 
             regions_in_country = [region for region in potential_regions if region.country in countries]
             regions_on_continents = [region for region in potential_regions if region.country.continent in continents]
@@ -116,10 +101,8 @@ class Extractor:
         remaining_places = set()
         cities = set()
         for place in places:
-            city_query = self.build_query('city_name', place)
-
-            cities_df = self.locations_data.query(city_query)
-            potential_cities = City.from_dicts(cities_df.to_dict("records"))
+            cities_dto = self.dbclient.fetch_all('city_name', place)
+            potential_cities = City.from_dtos(cities_dto)
 
             cities_in_regions = [city for city in potential_cities if city.region in regions]
             cities_in_country = [city for city in potential_cities if city.country in countries]
@@ -144,10 +127,9 @@ class Extractor:
         name_upper = name_clean.upper()
         resolved: Optional[str] = self.acronyms_mapping.get(name_upper)
         if not resolved:
-            country_iso_query = self.build_query('country_iso_code', name_clean)
-            countries_df = self.locations_data.query(country_iso_query)
-            if not countries_df.empty:
-                resolved: str = countries_df['country_name'].drop_duplicates().iloc[0]
+            countries_dto = self.dbclient.fetch_one_raw('country_iso_code', name_clean, columns='country_name')
+            if countries_dto:
+                resolved = countries_dto[0]
         return resolved
 
     def is_country(self, name: str) -> bool:
