@@ -1,12 +1,13 @@
+import csv
 import os
 import sqlite3
+
 from dataclasses import dataclass
-from sqlite3 import Cursor, Connection
-from typing import List, Tuple, Union, Optional
+from sqlite3 import Connection, Cursor
+from typing import List, Optional, Tuple, Union
 
 from location_extractor import src_dir
 from location_extractor.helpers import remove_accents
-import csv
 
 
 @dataclass(frozen=True, order=True)
