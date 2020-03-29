@@ -11,7 +11,8 @@ unit:
 .PHONY: package
 package:
 	poetry check
-	pip check
+	# TODO: make sure it can be enabled
+	# pip check
 	safety check --bare --full-report
 
 .PHONY: complexity
