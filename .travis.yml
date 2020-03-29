@@ -16,7 +16,7 @@ script:
   - make test
 after_success:
   - pip install codecov
-  - codecov  # submit coverage
+  - codecov --file=./.tests_reports/coverage.xml
 notifications:
   email:
     on_success: never
