@@ -1,35 +1,46 @@
 import re
 
-from typing import List, Optional, Set, Tuple
+from typing import Final, Generator, Iterable, List, Optional, Set, Tuple
 
 from location_extractor.clients import DBClient, LocationDTO
 from location_extractor.containers import City, Continent, Country, Region
-from location_extractor.helpers import remove_accents
 from location_extractor.named_entity_recognition.ner import NERExtractor
+from location_extractor.utils import remove_accents
+
+_Locations = Tuple[
+    List[Continent],
+    List[Country],
+    List[Region],
+    List[City],
+]
+EMPTY_STRING: Final = ''
 
 
-class Extractor:
+# TODO: refactor ``Extractor`` to have less method and lower complexity
+class Extractor:  # noqa: WPS214
     sublocation_pattern = re.compile(
-        r"\s*(west|south|north|east)(ern)?\s*",
-        re.IGNORECASE
+        r'\s*(west|south|north|east)(ern)?\s*',
+        re.IGNORECASE,
     )
     clean_acronym_pattern = re.compile(
-        r"(^|\s)(the)(\s|$)", flags=re.IGNORECASE
+        r'(^|\s)(the)(\s|$)',
+        flags=re.IGNORECASE,
     )
 
     def __init__(self) -> None:
         self.extractor = NERExtractor()
-
         self.dbclient = DBClient()
-
         self.acronyms_mapping = {
-            "UK": "United Kingdom",
-            "USA": "United States",
+            'UK': 'United Kingdom',
+            'USA': 'United States',
         }
 
-    def places_by_name(self, place_name, column_name) -> List[LocationDTO]:
-        rows = self.dbclient.fetch_all(column_name, place_name)
-        return rows
+    def places_by_name(
+        self,
+        place_name: str,
+        column_name: str,
+    ) -> List[LocationDTO]:
+        return self.dbclient.fetch_all(column_name, place_name)
 
     def cities_for_name(self, city_name: str) -> List[LocationDTO]:
         return self.places_by_name(city_name, 'city_name')
@@ -52,16 +63,24 @@ class Extractor:
 
         return list(continents), remaining_places
 
-    def get_countries(self, places: List[str], continents: List[Continent]) -> Tuple[List[Country], Set[str]]:
+    def get_countries(  # noqa: WPS210
+        self,
+        places: List[str],
+        continents: List[Continent],
+    ) -> Tuple[List[Country], Set[str]]:
         countries = set()
         remaining_places = set()
         for place in places:
             resolved = self.resolve_acronym(place)
-            countries_dto = self.dbclient.fetch_all('country_name', resolved or place)
-
+            countries_dto = self.dbclient.fetch_all(
+                'country_name',
+                resolved or place,
+            )
             potential_countries = Country.from_dtos(countries_dto)
-
-            countries_on_continents = [country for country in potential_countries if country.continent in continents]
+            countries_on_continents = [
+                country for country in potential_countries
+                if country.continent in continents
+            ]
 
             if countries_on_continents:
                 countries = countries.union(countries_on_continents)
@@ -69,21 +88,27 @@ class Extractor:
                 countries = countries.union(potential_countries)
             else:
                 remaining_places.add(place)
-
         return list(countries), remaining_places
 
-    def get_regions(self, places: Set[str], continents: List[Continent],
-                    countries: List[Country]) -> Tuple[List[Region], Set[str]]:
+    def get_regions(  # noqa: WPS210
+        self,
+        places: Set[str],
+        continents: List[Continent],
+        countries: List[Country],
+    ) -> Tuple[List[Region], Set[str]]:
         regions = set()
         remaining_places = set()
-
         for place in places:
             regions_dto = self.dbclient.fetch_all('subdivision_name', place)
-
             potential_regions = Region.from_dtos(regions_dto)
-
-            regions_in_country = [region for region in potential_regions if region.country in countries]
-            regions_on_continents = [region for region in potential_regions if region.country.continent in continents]
+            regions_in_country = [
+                region for region in potential_regions
+                if region.country in countries
+            ]
+            regions_on_continents = [
+                region for region in potential_regions
+                if region.country.continent in continents
+            ]
 
             if regions_in_country:
                 regions = regions.union(regions_in_country)
@@ -93,20 +118,34 @@ class Extractor:
                 regions = regions.union(potential_regions)
             else:
                 remaining_places.add(place)
-
         return list(regions), remaining_places
 
-    def get_cities(self, places: Set[str], continents: List[Continent], countries: List[Country],
-                   regions: List[Region]) -> Tuple[List[City], Set[str]]:
+    # TODO: refactor ``get_cities`` to lower its Jones Complexity and local
+    # variables amount
+    def get_cities(  # noqa: WPS210, WPS231
+        self,
+        places: Set[str],
+        continents: List[Continent],
+        countries: List[Country],
+        regions: List[Region],
+    ) -> Tuple[List[City], Set[str]]:
         remaining_places = set()
         cities = set()
         for place in places:
             cities_dto = self.dbclient.fetch_all('city_name', place)
             potential_cities = City.from_dtos(cities_dto)
-
-            cities_in_regions = [city for city in potential_cities if city.region in regions]
-            cities_in_country = [city for city in potential_cities if city.country in countries]
-            cities_on_continents = [city for city in potential_cities if city.country.continent in continents]
+            cities_in_regions = [
+                city for city in potential_cities
+                if city.region in regions
+            ]
+            cities_in_country = [
+                city for city in potential_cities
+                if city.country in countries
+            ]
+            cities_on_continents = [
+                city for city in potential_cities
+                if city.country.continent in continents
+            ]
 
             if cities_in_regions:
                 cities = cities.union(cities_in_regions)
@@ -118,16 +157,19 @@ class Extractor:
                 cities = cities.union(potential_cities)
             else:
                 remaining_places.add(place)
-
         return list(cities), remaining_places
 
-    def resolve_acronym(self, name) -> Optional[str]:
+    def resolve_acronym(self, name: str) -> Optional[str]:
         name_clean = remove_accents(name)
-        name_clean = self.clean_acronym_pattern.sub("", name_clean)
+        name_clean = self.clean_acronym_pattern.sub(EMPTY_STRING, name_clean)
         name_upper = name_clean.upper()
-        resolved: Optional[str] = self.acronyms_mapping.get(name_upper)
+        resolved = self.acronyms_mapping.get(name_upper, EMPTY_STRING)
         if not resolved:
-            countries_dto = self.dbclient.fetch_one_raw('country_iso_code', name_clean, columns='country_name')
+            countries_dto = self.dbclient.fetch_one_raw(
+                'country_iso_code',
+                name_clean,
+                columns='country_name',
+            )
             if countries_dto:
                 resolved = countries_dto[0]
         return resolved
@@ -138,40 +180,52 @@ class Extractor:
 
     def is_location(self, place: str) -> bool:
         continents, countries, regions, cities = self.find_locations([place])
-
         return bool(cities or regions or countries)
 
-    def clean_sublocations(self, places):
-        for place in places:
-            yield self.sublocation_pattern.sub("", place)
+    def clean_sublocations(
+        self,
+        places: Iterable[str],
+    ) -> Generator[str, None, None]:
+        yield from (
+            self.sublocation_pattern.sub(EMPTY_STRING, place)
+            for place in places
+        )
 
-    def extract_places(self, text=None):
+    def extract_places(self, text: str = EMPTY_STRING) -> List[str]:
         places = self.extractor.find_entities(text)
-        places = list(self.clean_sublocations(places))
-        return places
+        return list(self.clean_sublocations(places))
 
-    def find_locations(self, places):
+    def find_locations(self, places: List[str]) -> _Locations:
         continents, remaining_places = self.get_continents(places)
         countries, remaining_places = self.get_countries(places, continents)
-        regions, remaining_places = self.get_regions(remaining_places, continents, countries)
-        cities, remaining_places = self.get_cities(remaining_places, continents, countries, regions)
-
+        regions, remaining_places = self.get_regions(
+            remaining_places,
+            continents,
+            countries,
+        )
+        cities, remaining_places = self.get_cities(
+            remaining_places,
+            continents,
+            countries,
+            regions,
+        )
         return (
             sorted(continents),
             sorted(countries),
             sorted(regions),
-            sorted(cities)
+            sorted(cities),
         )
 
-    def extract_locations(self, text=None, return_strings=False):
+    def extract_locations(
+        self,
+        text: str = EMPTY_STRING,
+        return_strings: bool = False,
+    ) -> _Locations:
         places = self.extract_places(text)
-
         continents, countries, regions, cities = self.find_locations(places)
-
         if return_strings:
             continents = Continent.many_to_string(continents)
             countries = Country.many_to_string(countries)
             regions = Region.many_to_string(regions)
             cities = City.many_to_string(cities)
-
         return continents, countries, regions, cities
