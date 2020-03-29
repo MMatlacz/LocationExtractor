@@ -8,13 +8,12 @@ python:
 env:
   - POETRY_VERSION=1.0.0
 before_install:
-  - python --version
   - pip freeze | xargs pip uninstall -y
   - pip install poetry==${POETRY_VERSION}
 install:
-  - pip install tox-travis
+  - poetry install
 script:
-  - tox
+  - make test
 after_success:
   - pip install codecov
   - codecov  # submit coverage
