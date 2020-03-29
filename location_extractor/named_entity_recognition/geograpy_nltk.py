@@ -8,7 +8,7 @@ def download_nltk():
         'treebank',
         'maxent_treebank_pos_tagger',
         'punkt',
-        'averaged_perceptron_tagger'
+        'averaged_perceptron_tagger',
     ]
     for resource in required_resources:
         try:
