@@ -10,7 +10,7 @@ class Entity(abc.ABC):
     @abc.abstractmethod
     def from_dto(cls, dto: LocationDTO):
         """
-        Convert dictionary to Entity
+        Create ``Entity`` instance from ``LocationDTO``.
         :param dto: LocationDTO
         :return: Entity
         """
