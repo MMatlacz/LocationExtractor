@@ -86,14 +86,30 @@ def test_is_a_country(word, is_country, location_extractor):
 @pytest.mark.parametrize(
     ["sentence", "locations"],
     [
-        ("Person living in Berlin, Germany",
-         ([], ['Germany'], [], ['Berlin, Land Berlin, Germany', 'Berlin, Schleswig-Holstein, Germany'])),
-        ("She went to south america then moved to Hawaii and flew to Australia",
-         ([], ['Australia'], ['Hawaii, United States'], [])),
-        ("Plumber in Worcester, Massachusetts",
-         ([], [], ['Massachusetts, United States'], ['Worcester, Massachusetts, United States'])),
-        ("London, Warsaw, Czechia, Western Europe",
-         (['Europe'], ['Czechia'], [], ['Warsaw, Mazovia, Poland', 'London, England, United Kingdom'])),
+        ("Person living in Berlin, Germany", (
+                [],
+                ['Germany, Europe'],
+                [],
+                ['Berlin, Land Berlin, Germany, Europe', 'Berlin, Schleswig-Holstein, Germany, Europe']
+        )),
+        ("She went to south america then moved to Hawaii and flew to Australia", (
+                [],
+                ['Australia, Oceania'],
+                ['Hawaii, United States, North America'],
+                []
+        )),
+        ("Plumber in Worcester, Massachusetts", (
+                [],
+                [],
+                ['Massachusetts, United States, North America'],
+                ['Worcester, Massachusetts, United States, North America']
+        )),
+        ("London, Warsaw, Czechia, Western Europe", (
+                ['Europe'],
+                ['Czechia, Europe'],
+                [],
+                ['Warsaw, Mazovia, Poland, Europe', 'London, England, United Kingdom, Europe']
+        )),
     ]
 )
 def tests_extract_locations(sentence, locations, location_extractor):

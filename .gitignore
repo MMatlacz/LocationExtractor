@@ -7,3 +7,7 @@ venv
 .python-version
 .coverage
 .tox/
+
+*.ipynb
+scripts
+*.db
