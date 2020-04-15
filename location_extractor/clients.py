@@ -22,9 +22,8 @@ class LocationDTO:
 
 
 class DBClient:
-    dbpath = os.path.join(src_dir, 'data', 'data.db')
-
     def __init__(self) -> None:
+        self.dbpath = os.path.join(src_dir, 'data', 'data.db')
         self.locations_path = os.path.join(
             src_dir,
             'data',
@@ -96,7 +95,7 @@ class DBClient:
                 with open(self.locations_path, 'r') as locations_file:
                     reader = csv.reader(locations_file, delimiter=',')
                     columns = next(reader)
-                    for col in self.default_columns[:7]:
+                    for i in range(len(columns) - 1):
                         columns.append(f'{col}_lowercase')
 
                     for row in reader:

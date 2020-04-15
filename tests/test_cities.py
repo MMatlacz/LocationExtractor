@@ -1,6 +1,6 @@
 import pytest
 
-from location_extractor.containers import City, Location
+from location_extractor.containers import City
 
 
 @pytest.mark.parametrize(
@@ -34,7 +34,6 @@ from location_extractor.containers import City, Location
 )
 def test_get_cities(places, expected_cities, location_extractor):
     expected_cities = list(map(', '.join, expected_cities))
-    places = [Location(name=place) for place in places]
 
     countries, rest = location_extractor.get_countries(places, continents=[])
     regions, rest = location_extractor.get_regions(rest, continents=[], countries=countries)
@@ -60,7 +59,6 @@ def test_get_cities(places, expected_cities, location_extractor):
 )
 def test_extract_cities(places, expected_cities, location_extractor):
     expected_cities = list(map(', '.join, expected_cities))
-    places = [Location(name=place) for place in places]
 
     cities, _ = location_extractor.get_cities(places, [], [], [])
 
