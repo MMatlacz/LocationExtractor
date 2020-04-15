@@ -28,19 +28,38 @@ class Entity(abc.ABC):
 
 
 @dataclass(frozen=True, eq=True)
+class Location(Entity):
+    name: str
+    type: Optional[str] = None
+
+    @classmethod
+    def from_dto(cls, dto: LocationDTO) -> 'Entity':
+        pass
+
+    @classmethod
+    def from_dtos(cls, dtos: List[LocationDTO]) -> List['Entity']:
+        pass
+
+
+@dataclass(frozen=True)
 class Continent(Entity):
     name: str
+    sublocation: Optional[str] = ""
+
+    def __eq__(self, other):
+        return self.name == other.name
 
     def __lt__(self, other):
         return self.name < other.name
 
     def __str__(self) -> str:
-        return self.name
+        return f"{self.sublocation} {self.name}".strip()
 
     @classmethod
     def from_dto(cls, dto: LocationDTO) -> 'Continent':
         return cls(
-            name=dto.continent_name
+            name=dto.continent_name,
+            sublocation=""
         )
 
     @classmethod
