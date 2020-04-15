@@ -1,6 +1,6 @@
 import pytest
 
-from location_extractor.containers import Country
+from location_extractor.containers import Country, Location
 
 
 @pytest.mark.parametrize(
@@ -16,5 +16,6 @@ from location_extractor.containers import Country
     ]
 )
 def test_get_countries(places, expected_countries, location_extractor):
+    places = [Location(name=place) for place in places]
     countries, _ = location_extractor.get_countries(places, [])
     assert sorted(Country.many_to_string(countries)) == expected_countries
