@@ -1,4 +1,5 @@
 import abc
+
 from dataclasses import dataclass
 from typing import List, Optional
 
@@ -6,24 +7,21 @@ from location_extractor.clients import LocationDTO
 
 
 class Entity(abc.ABC):
+    """Container for domain specific entities."""
+
     @classmethod
     @abc.abstractmethod
     def from_dto(cls, dto: LocationDTO) -> 'Entity':
-        """
-        Create ``Entity`` instance from ``LocationDTO``.
-        :param dto: LocationDTO
-        :return: Entity
-        """
+        """Create ``Entity`` instance from ``LocationDTO``."""
 
     @classmethod
     @abc.abstractmethod
     def from_dtos(cls, dtos: List[LocationDTO]) -> List['Entity']:
-        """
-        Convert list of dictionaries to a list of entities
-        """
+        """Create ``Entity`` instances from ``LocationDTO`` instances."""
 
     @classmethod
     def many_to_string(cls, entities: List['Entity']) -> List[str]:
+        """Return string representations of ``Entity`` instances."""
         return [str(entity) for entity in entities]
 
 
@@ -39,9 +37,7 @@ class Continent(Entity):
 
     @classmethod
     def from_dto(cls, dto: LocationDTO) -> 'Continent':
-        return cls(
-            name=dto.continent_name
-        )
+        return cls(name=dto.continent_name)
 
     @classmethod
     def from_dtos(cls, dtos: List[LocationDTO]) -> List['Continent']:
@@ -65,7 +61,7 @@ class Country(Entity):
         return cls(
             name=dto.country_name,
             iso_code=dto.country_iso_code,
-            continent=Continent.from_dto(dto)
+            continent=Continent.from_dto(dto),
         )
 
     @classmethod
@@ -88,7 +84,7 @@ class Region(Entity):
     def from_dto(cls, dto: LocationDTO) -> 'Region':
         return cls(
             name=dto.subdivision_name,
-            country=Country.from_dto(dto)
+            country=Country.from_dto(dto),
         )
 
     @classmethod
@@ -103,7 +99,10 @@ class City(Entity):
     country: Country
 
     def __lt__(self, other):
-        return (self.country, self.region, self.name) < (other.country, other.region, other.name)
+        return (
+            (self.country, self.region, self.name)
+            < (other.country, other.region, other.name)
+        )
 
     def __str__(self) -> str:
         return f'{self.name}, {self.region}'
@@ -113,7 +112,7 @@ class City(Entity):
         return cls(
             name=dto.city_name,
             region=Region.from_dto(dto),
-            country=Country.from_dto(dto)
+            country=Country.from_dto(dto),
         )
 
     @classmethod

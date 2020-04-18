@@ -8,8 +8,8 @@ import pytest
     ("Departement de l'Ouest", 'subdivision_name'),
 ])
 def test_issue8_single_quote_in_place_name(
-        location_extractor,
-        name,
-        column_name,
+    location_extractor,
+    name,
+    column_name,
 ):
     assert location_extractor.places_by_name(name, column_name)

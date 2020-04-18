@@ -3,9 +3,11 @@ import os
 import pytest
 
 from location_extractor.clients import DBClient
-from location_extractor.named_entity_recognition.ner import NERExtractor
-from location_extractor.named_entity_recognition.geograpy_nltk import download_nltk
 from location_extractor.extractor import Extractor
+from location_extractor.named_entity_recognition.geograpy_nltk import (
+    download_nltk,
+)
+from location_extractor.named_entity_recognition.ner import NERExtractor
 
 download_nltk()
 

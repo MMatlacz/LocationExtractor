@@ -5,9 +5,8 @@ venv
 /*.egg-info
 /*.egg
 .python-version
-.coverage
 .tox/
-
+.tests_reports/*
 *.ipynb
 scripts
 *.db
