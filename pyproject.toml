@@ -2,16 +2,28 @@
 name = "location_extractor"
 version = "1.0.0"
 description = "Extract countries, regions and cities from text"
-# TODO: add authors
-authors = []
+authors = [
+    "Marcin Matłacz <martin.matlacz@gmail.com>",
+    "Łukasz Skarżyński <me@skarzi.com>",
+]
 license = "MIT"
 include = [
     "location_extractor/data/*.csv",
 ]
 readme = "README.md"
 repository = "https://github.com/MMatlacz/LocationExtractor"
-# TODO: add classifiers
+keywords = [
+    "location_extractor",
+    "locationextractor",
+    "geolocation",
+]
 classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Text Processing",
 ]
 
 [tool.poetry.dependencies]

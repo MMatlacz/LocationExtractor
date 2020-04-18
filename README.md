@@ -1,5 +1,5 @@
 LocationExtractor
-========
+=================
 [![Build Status](https://travis-ci.com/MMatlacz/LocationExtractor.svg?token=nK1H37yHzQmBRmsEpSZq&branch=master)](https://travis-ci.com/MMatlacz/LocationExtractor)
 [![codecov](https://codecov.io/gh/MMatlacz/LocationExtractor/branch/master/graph/badge.svg)](https://codecov.io/gh/MMatlacz/LocationExtractor)
 
