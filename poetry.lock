@@ -912,6 +912,21 @@ pytest = ">=3.5"
 
 [[package]]
 category = "dev"
+description = "Pytest plugin to randomly order tests and control random.seed."
+name = "pytest-randomly"
+optional = false
+python-versions = ">=3.5"
+version = "3.3.1"
+
+[package.dependencies]
+pytest = "*"
+
+[package.dependencies.importlib-metadata]
+python = "<3.8"
+version = "*"
+
+[[package]]
+category = "dev"
 description = "Python for Window Extensions"
 marker = "sys_platform == \"win32\""
 name = "pywin32"
@@ -1242,7 +1257,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "161c038ec295775204f2211a185c7e1c4275e6f988750f8b8bc4fac4166cb70c"
+content-hash = "ab9204f215a09d333904729fe3a19e6bb3e41c6da7cfdf1e41c59ba22181fe5b"
 python-versions = ">=3.7,<4.0"
 
 [metadata.files]
@@ -1602,6 +1617,10 @@ pytest-deadfixtures = [
 pytest-isort = [
     {file = "pytest-isort-0.3.1.tar.gz", hash = "sha256:4bfee60dad1870b51700d55a85f5ceda766bd9d3d2878c1bbabee80e61b1be1a"},
     {file = "pytest_isort-0.3.1-py2.py3-none-any.whl", hash = "sha256:3be60e0de277b420ff89303ca6494320c41f7819ffa898756b90ef976e4c636a"},
+]
+pytest-randomly = [
+    {file = "pytest-randomly-3.3.1.tar.gz", hash = "sha256:568b6a3bd251b566e8d99fc7bcb15c3c39561babd07e16412563b7dab1b0290a"},
+    {file = "pytest_randomly-3.3.1-py3-none-any.whl", hash = "sha256:9b06429c877b3aab360c7cf698f2a65dbe75db1b1ed0ab02dc3bb47f3487e469"},
 ]
 pywin32 = [
     {file = "pywin32-227-cp27-cp27m-win32.whl", hash = "sha256:371fcc39416d736401f0274dd64c2302728c9e034808e37381b5e1b22be4a6b0"},
