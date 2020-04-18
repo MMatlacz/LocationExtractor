@@ -6,6 +6,7 @@ lint:
 
 .PHONY: unit
 unit:
+	pytest --dead-fixtures --dup-fixtures
 	pytest
 
 .PHONY: package
