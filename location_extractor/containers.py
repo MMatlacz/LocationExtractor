@@ -1,9 +1,11 @@
 import abc
 
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Type, TypeVar
 
 from location_extractor.clients import LocationDTO
+
+GenericEntity = TypeVar('GenericEntity', bound='Entity')
 
 
 class Entity(abc.ABC):
@@ -11,16 +13,22 @@ class Entity(abc.ABC):
 
     @classmethod
     @abc.abstractmethod
-    def from_dto(cls, dto: LocationDTO) -> 'Entity':
+    def from_dto(cls: Type[GenericEntity], dto: LocationDTO) -> GenericEntity:
         """Create ``Entity`` instance from ``LocationDTO``."""
 
     @classmethod
     @abc.abstractmethod
-    def from_dtos(cls, dtos: List[LocationDTO]) -> List['Entity']:
+    def from_dtos(
+        cls: Type[GenericEntity],
+        dtos: List[LocationDTO],
+    ) -> List[GenericEntity]:
         """Create ``Entity`` instances from ``LocationDTO`` instances."""
 
     @classmethod
-    def many_to_string(cls, entities: List['Entity']) -> List[str]:
+    def many_to_string(
+        cls: Type[GenericEntity],
+        entities: List[GenericEntity],
+    ) -> List[str]:
         """Return string representations of ``Entity`` instances."""
         return [str(entity) for entity in entities]
 
