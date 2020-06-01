@@ -25,7 +25,7 @@ Unidecode = "^1.1.1"
 [tool.poetry.dev-dependencies]
 pytest = "^5.4.2"
 pytest-cov = "^2.9.0"
-ipython = "^7.14.0"
+ipython = "^7.15.0"
 isort = "^4.3.21"
 pytest-isort = "^1.0.0"
 wily = "^1.16.0"
