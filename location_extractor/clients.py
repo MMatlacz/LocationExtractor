@@ -89,7 +89,7 @@ class DBClient:  # noqa: WPS214
     def parse_columns(
         self,
         columns: Optional[StringOrIterableOfStrings],
-    ) -> StringOrIterableOfStrings:
+    ) -> str:
         # TODO: refactor this conditions to get rid of below ignored violation
         if not columns:  # noqa: WPS504
             selected_columns = self.columns
@@ -123,8 +123,9 @@ class DBClient:  # noqa: WPS214
         column_name: str,
         columns: str,
         conn: sqlite3.Connection,
-        value: List[str],
+        value: Iterable[str],
     ) -> sqlite3.Cursor:
+        value = list(value)
         return conn.execute(
             f'''
                 SELECT DISTINCT
@@ -175,7 +176,7 @@ class DBClient:  # noqa: WPS214
         columns: Optional[Union[StringOrIterableOfStrings]] = None,
     ) -> Optional[Tuple]:
         with self.connection as conn:
-            value = self.parse_values(value)
+            value = str(self.parse_values(value))
             columns = self.parse_columns(columns)
             column_name = f'{column_name}{LOWERCASE_COLUMN_SUFFIX}'
             cursor = self.query(column_name, columns, conn, value)

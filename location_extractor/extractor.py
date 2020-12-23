@@ -1,6 +1,6 @@
 import re
 
-from typing import Generator, Iterable, List, Optional, Set, Tuple
+from typing import Generator, Iterable, List, Optional, Set, Tuple, Union
 
 from typing_extensions import Final
 
@@ -14,6 +14,10 @@ _Locations = Tuple[
     List[Country],
     List[Region],
     List[City],
+]
+_MaybeStrLocations = Union[
+    _Locations,
+    Tuple[List[str], List[str], List[str], List[str]],  # noqa: WPS221
 ]
 EMPTY_STRING: Final = ''
 
@@ -51,7 +55,7 @@ class Extractor:  # noqa: WPS214
         return self.places_by_name(region_name, 'subdivision_name')
 
     def get_continents(self, places) -> Tuple[List[Continent], Set[str]]:
-        continents = set()
+        continents: Set[Continent] = set()
         remaining_places = set()
         for place in places:
             continents_dto = self.dbclient.fetch_all('continent_name', place)
@@ -70,7 +74,7 @@ class Extractor:  # noqa: WPS214
         places: List[str],
         continents: List[Continent],
     ) -> Tuple[List[Country], Set[str]]:
-        countries = set()
+        countries: Set[Country] = set()
         remaining_places = set()
         for place in places:
             resolved = self.resolve_acronym(place)
@@ -98,7 +102,7 @@ class Extractor:  # noqa: WPS214
         continents: List[Continent],
         countries: List[Country],
     ) -> Tuple[List[Region], Set[str]]:
-        regions = set()
+        regions: Set[Region] = set()
         remaining_places = set()
         for place in places:
             regions_dto = self.dbclient.fetch_all('subdivision_name', place)
@@ -132,7 +136,7 @@ class Extractor:  # noqa: WPS214
         regions: List[Region],
     ) -> Tuple[List[City], Set[str]]:
         remaining_places = set()
-        cities = set()
+        cities: Set[City] = set()
         for place in places:
             cities_dto = self.dbclient.fetch_all('city_name', place)
             potential_cities = City.from_dtos(cities_dto)
@@ -222,12 +226,14 @@ class Extractor:  # noqa: WPS214
         self,
         text: str = EMPTY_STRING,
         return_strings: bool = False,
-    ) -> _Locations:
+    ) -> _MaybeStrLocations:
         places = self.extract_places(text)
         continents, countries, regions, cities = self.find_locations(places)
         if return_strings:
-            continents = Continent.many_to_string(continents)
-            countries = Country.many_to_string(countries)
-            regions = Region.many_to_string(regions)
-            cities = City.many_to_string(cities)
+            return (
+                Continent.many_to_string(continents),
+                Country.many_to_string(countries),
+                Region.many_to_string(regions),
+                City.many_to_string(cities),
+            )
         return continents, countries, regions, cities

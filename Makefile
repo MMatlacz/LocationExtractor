@@ -2,6 +2,7 @@ SHELL:=/usr/bin/env bash
 
 .PHONY: lint
 lint:
+	mypy location_extractor
 	flake8 location_extractor tests
 
 .PHONY: unit

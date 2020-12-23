@@ -1,7 +1,6 @@
 import pytest
 
-from location_extractor.containers import Continent
-from location_extractor.extractor import City, Country, Region
+from location_extractor.containers import City, Continent, Country, Region
 
 
 def test_kenya(location_extractor):
@@ -145,9 +144,26 @@ def test_is_a_country(word, is_country, location_extractor):
         ),
     ),
 ])
-def tests_extract_locations(sentence, expected_locations, location_extractor):
+def tests_extract_locations_return_strings(
+    sentence,
+    expected_locations,
+    location_extractor,
+):
     locations = location_extractor.extract_locations(
         sentence,
         return_strings=True,
     )
     assert locations == expected_locations
+
+
+def test_extract_location(location_extractor):
+    """Ensure `Entity` subclassess are returned if ``return_string`` falsy."""
+    locations = location_extractor.extract_locations(
+        'Person living in Berlin, Germany',
+        return_strings=False,
+    )
+    assert (locations[0], locations[2]) == ([], [])
+    assert all(isinstance(country, Country) for country in locations[1])
+    assert {country.name for country in locations[1]} == {'Germany'}
+    assert all(isinstance(city, City) for city in locations[3])
+    assert {city.name for city in locations[3]} == {'Berlin'}
