@@ -487,7 +487,7 @@ testing = ["Django (<3.1)", "colorama", "docopt", "pytest (>=3.9.0,<5.0.0)"]
 
 [[package]]
 name = "jellyfish"
-version = "0.7.2"
+version = "0.8.2"
 description = "a library for doing approximate and phonetic matching of strings."
 category = "main"
 optional = false
@@ -755,7 +755,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*"
 
 [[package]]
 name = "pycountry"
-version = "19.8.18"
+version = "20.7.3"
 description = "ISO country, subdivision, language, currency and script definitions and their translations"
 category = "main"
 optional = false
@@ -1171,7 +1171,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4.0"
-content-hash = "447d4d6d9cf86c95fa39402aec8b8c06eb88828b5601b4344c3c96936d97d45b"
+content-hash = "7b24c2a08dca2962b4f4a483a6347376ccce05bf535e9c3ddb009a18ae7e0c23"
 
 [metadata.files]
 appnope = [
@@ -1388,7 +1388,11 @@ jedi = [
     {file = "jedi-0.17.2.tar.gz", hash = "sha256:86ed7d9b750603e4ba582ea8edc678657fb4007894a12bcf6f4bb97892f31d20"},
 ]
 jellyfish = [
-    {file = "jellyfish-0.7.2.tar.gz", hash = "sha256:cb09c50d7e2bb7b926fc7654762bc81f9c629e0c92ae7137bf22b34f39515286"},
+    {file = "jellyfish-0.8.2-cp35-cp35m-manylinux2014_x86_64.whl", hash = "sha256:f5c7fd1b02edf86135ed005ba8715ed9496d268e3d77e6428445689a441c4c64"},
+    {file = "jellyfish-0.8.2-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:2490726dda6603fad0090f7afa2b33718ac03011b6807658b8cdbf512a798e89"},
+    {file = "jellyfish-0.8.2-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:4213dda17b75e09b4a5bac48b7dd2602cf54304af49fd6236d3539f49f614e8a"},
+    {file = "jellyfish-0.8.2-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:288727bac0cef5817640d1d0d3655dabb9906d1f7b3e31eb1bd0b005bdf0eaf2"},
+    {file = "jellyfish-0.8.2.tar.gz", hash = "sha256:a499741401512d05bbd3556e448e960bc908eba3879fb73d450e8e91566a030b"},
 ]
 joblib = [
     {file = "joblib-1.0.0-py3-none-any.whl", hash = "sha256:75ead23f13484a2a414874779d69ade40d4fa1abe62b222a23cd50d4bc822f6f"},
@@ -1525,7 +1529,7 @@ pycodestyle = [
     {file = "pycodestyle-2.6.0.tar.gz", hash = "sha256:c58a7d2815e0e8d7972bf1803331fb0152f867bd89adf8a01dfd55085434192e"},
 ]
 pycountry = [
-    {file = "pycountry-19.8.18.tar.gz", hash = "sha256:3c57aa40adcf293d59bebaffbe60d8c39976fba78d846a018dc0c2ec9c6cb3cb"},
+    {file = "pycountry-20.7.3.tar.gz", hash = "sha256:81084a53d3454344c0292deebc20fcd0a1488c136d4900312cbd465cf552cb42"},
 ]
 pydocstyle = [
     {file = "pydocstyle-5.1.1-py3-none-any.whl", hash = "sha256:aca749e190a01726a4fb472dd4ef23b5c9da7b9205c0a7857c06533de13fd678"},
