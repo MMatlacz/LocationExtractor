@@ -18,7 +18,7 @@ classifiers = [
 python = ">=3.7,<4.0"
 numpy = "^1.19.4"
 nltk = "^3.5"
-jellyfish = "^0.7.2"
+jellyfish = "^0.8.2"
 pycountry = "^20.7.3"
 Unidecode = "^1.1.2"
 
