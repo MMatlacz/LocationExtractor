@@ -32,7 +32,7 @@ pytest-cov = "^2.10.1"
 pytest-deadfixtures = "^2.2.1"
 pytest-isort = "^1.2.0"
 pytest-randomly = "^3.5.0"
-safety = "^1.10.1"
+safety = "^1.10.2"
 wemake-python-styleguide = "^0.14.1"
 wily = "^1.19.0"
 
