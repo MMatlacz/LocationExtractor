@@ -854,7 +854,7 @@ pytest = ">=3.0.0"
 
 [[package]]
 name = "pytest-isort"
-version = "1.2.0"
+version = "1.3.0"
 description = "py.test plugin to check import ordering using isort"
 category = "dev"
 optional = false
@@ -1171,7 +1171,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4.0"
-content-hash = "12756a91cdb63cdbbddbf63dd4ff6f1287b019561f49522fa9433d7766948642"
+content-hash = "207762ec263e096f25aba514efde79df044abd90a3c570ecccb109d8dfb23ac2"
 
 [metadata.files]
 appnope = [
@@ -1563,8 +1563,8 @@ pytest-deadfixtures = [
     {file = "pytest_deadfixtures-2.2.1-py2.py3-none-any.whl", hash = "sha256:db71533f2d9456227084e00a1231e732973e299ccb7c37ab92e95032ab6c083e"},
 ]
 pytest-isort = [
-    {file = "pytest-isort-1.2.0.tar.gz", hash = "sha256:f0fcf9674f3a627b36e07466d335e82b0f7c4f9e0f7ec39f2a1750b0189d5371"},
-    {file = "pytest_isort-1.2.0-py3-none-any.whl", hash = "sha256:2c6a1d210e8c478e418ab25df2408c235c97b1b8958fb0b139d790d0ec246f58"},
+    {file = "pytest-isort-1.3.0.tar.gz", hash = "sha256:46a12331a701e2f21d48548b2828c8b0a7956dbf1cd5347163f537deb24332dd"},
+    {file = "pytest_isort-1.3.0-py3-none-any.whl", hash = "sha256:074255ad393088a2daee6ca7f2305b7b86358ff632f62302896d8d4b2b339107"},
 ]
 pytest-randomly = [
     {file = "pytest-randomly-3.5.0.tar.gz", hash = "sha256:440cec143fd9b0adeb072006c71e0294402a2bc2ccd08079c2341087ba4cf2d1"},
