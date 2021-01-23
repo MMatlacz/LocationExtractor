@@ -958,7 +958,7 @@ six = ">=1.7.0"
 
 [[package]]
 name = "safety"
-version = "1.10.2"
+version = "1.10.3"
 description = "Checks installed dependencies for known vulnerabilities."
 category = "dev"
 optional = false
@@ -1171,7 +1171,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4.0"
-content-hash = "6c4506724df8372465c131cecb2f11983ea068ddeede794c77bf211081b18c2c"
+content-hash = "11fe57da9756f3d5bc142970027f53d92e7a6bee97b426f34c9fb571bed8376d"
 
 [metadata.files]
 appnope = [
@@ -1655,8 +1655,8 @@ retrying = [
     {file = "retrying-1.3.3.tar.gz", hash = "sha256:08c039560a6da2fe4f2c426d0766e284d3b736e355f8dd24b37367b0bb41973b"},
 ]
 safety = [
-    {file = "safety-1.10.2-py2.py3-none-any.whl", hash = "sha256:66972e94bc7252d156386ffbe89ceeecdf82cebe1f2bf4e1375cc7fe473b54fe"},
-    {file = "safety-1.10.2.tar.gz", hash = "sha256:9e35be579f7589cde300faaf947eefb6a4c1a63ae2a79edb370805ef99487c5f"},
+    {file = "safety-1.10.3-py2.py3-none-any.whl", hash = "sha256:5f802ad5df5614f9622d8d71fedec2757099705c2356f862847c58c6dfe13e84"},
+    {file = "safety-1.10.3.tar.gz", hash = "sha256:30e394d02a20ac49b7f65292d19d38fa927a8f9582cdfd3ad1adbbc66c641ad5"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},
