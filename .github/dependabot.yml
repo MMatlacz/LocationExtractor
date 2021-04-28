@@ -1,0 +1,30 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 10
+  reviewers:
+  - skarzi
+  - mmatlacz
+  ignore:
+  - dependency-name: nltk
+    versions:
+    - 3.6.1
+  - dependency-name: urllib3
+    versions:
+    - 1.26.3
+  - dependency-name: flake8-pytest-style
+    versions:
+    - 1.4.0
+  - dependency-name: ipython
+    versions:
+    - 7.21.0
+  - dependency-name: numpy
+    versions:
+    - 1.20.1
+  - dependency-name: wemake-python-styleguide
+    versions:
+    - 0.15.0
+    - 0.15.1
