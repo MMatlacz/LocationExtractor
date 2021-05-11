@@ -16,7 +16,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
-numpy = "^1.20.0"
+numpy = "^1.20.3"
 nltk = "^3.5"
 jellyfish = "^0.8.2"
 pycountry = "^20.7.3"
