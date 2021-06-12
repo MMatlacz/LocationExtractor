@@ -33,6 +33,7 @@ pytest = "^6.2.2"
 pytest-cov = "^2.11.1"
 pytest-deadfixtures = "^2.2.1"
 pytest-randomly = "^3.5.0"
+pytest-timeout = "^1.4.2"
 
 # linters
 #python
