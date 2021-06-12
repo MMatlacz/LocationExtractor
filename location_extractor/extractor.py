@@ -54,7 +54,10 @@ class Extractor:  # noqa: WPS214
     def regions_for_name(self, region_name: str) -> List[LocationDTO]:
         return self.places_by_name(region_name, 'subdivision_name')
 
-    def get_continents(self, places) -> Tuple[List[Continent], Set[str]]:
+    def get_continents(  # noqa: WPS615
+        self,
+        places,
+    ) -> Tuple[List[Continent], Set[str]]:
         continents: Set[Continent] = set()
         remaining_places = set()
         for place in places:
@@ -69,7 +72,7 @@ class Extractor:  # noqa: WPS214
 
         return list(continents), remaining_places
 
-    def get_countries(  # noqa: WPS210
+    def get_countries(  # noqa: WPS210, WPS615
         self,
         places: List[str],
         continents: List[Continent],
@@ -96,7 +99,7 @@ class Extractor:  # noqa: WPS214
                 remaining_places.add(place)
         return list(countries), remaining_places
 
-    def get_regions(  # noqa: WPS210
+    def get_regions(  # noqa: WPS210, WPS615
         self,
         places: Set[str],
         continents: List[Continent],
@@ -128,7 +131,7 @@ class Extractor:  # noqa: WPS214
 
     # TODO: refactor ``get_cities`` to lower its Jones Complexity and local
     # variables amount
-    def get_cities(  # noqa: WPS210, WPS231
+    def get_cities(  # noqa: WPS210, WPS231, WPS615
         self,
         places: Set[str],
         continents: List[Continent],

@@ -1,0 +1,24 @@
+---
+name: misspell
+'on':
+  workflow_dispatch: {}
+  schedule:
+    - cron: '0 9 * * 1-5'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v2
+      - uses: sobolevn/misspell-fixer-action@0.1.0
+      - uses: peter-evans/create-pull-request@v3.10.0
+        with:
+          token: "${{ secrets.GITHUB_TOKEN }}"
+          commit-message: fixes by misspell-fixer
+          title: typos fixes by misspell-fixer
+          branch: fix/misspell-fixer/typos
+          delete-branch: true
+          reviewers: |
+            MMatlacz
+            skarzi

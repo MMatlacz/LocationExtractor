@@ -9,7 +9,7 @@ from location_extractor.named_entity_recognition.geograpy_nltk import (
 )
 from location_extractor.named_entity_recognition.ner import NERExtractor
 
-download_nltk()
+download_nltk()  # type: ignore[no-untyped-call]
 
 
 @pytest.fixture(scope='session')

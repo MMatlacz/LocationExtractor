@@ -62,15 +62,16 @@ class DBClient:  # noqa: WPS214
         return sqlite3.connect(self.dbpath)
 
     def populate_locations_table(self) -> None:
+        table_exists_query = '''
+            SELECT
+                name
+            FROM
+                sqlite_master
+            WHERE
+                type='table' AND name='locations';
+        '''
         with self.connection as conn:
-            table_exists = conn.execute('''
-                SELECT
-                    name
-                FROM
-                    sqlite_master
-                WHERE
-                    type='table' AND name='locations';
-            ''').fetchone()
+            table_exists = conn.execute(table_exists_query).fetchone()
 
             if not table_exists:
                 self._create_locations_table(conn)
@@ -125,16 +126,21 @@ class DBClient:  # noqa: WPS214
         conn: sqlite3.Connection,
         value: Iterable[str],
     ) -> sqlite3.Cursor:
+        field_in_query_template = '''
+            SELECT DISTINCT
+                {0}
+            FROM
+                locations
+            WHERE
+                {1} IN ({2})
+        '''
         value = list(value)
         return conn.execute(
-            f'''
-                SELECT DISTINCT
-                    {columns}
-                FROM
-                    locations
-                WHERE
-                    {column_name} IN ({COMMA.join('?' * len(value))})
-            ''',
+            field_in_query_template.format(
+                columns,
+                column_name,
+                COMMA.join('?' * len(value)),
+            ),
             value,
         )
 
@@ -248,10 +254,11 @@ class DBClient:  # noqa: WPS214
                     *(value.lower() for value in str_values),
                 ))
 
+        insert_location_query = '''
+            INSERT INTO locations
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        '''
         connection.executemany(
-            '''
-                INSERT INTO locations
-                VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
-            ''',
+            insert_location_query,
             locations_data,
         )
