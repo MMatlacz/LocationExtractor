@@ -43,6 +43,7 @@ wemake-python-styleguide = "^0.14.1"
 wily = "^1.19.0"
 # other
 safety = "^1.10.3"
+yamllint = "^1.26.1"
 
 # type hinting
 mypy = "^0.812"

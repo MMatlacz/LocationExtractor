@@ -28,5 +28,10 @@ lint_complexity:
 	wily --config=setup.cfg diff --revision=master location_extractor tests
 
 
+.PHONY: lint_complexity
+lint_yaml:
+	yamllint --format colored .
+
+
 .PHONY: test
-test: lint_python unit lint_package
+test: lint_python unit lint_package lint_yaml
