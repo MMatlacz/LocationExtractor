@@ -1,8 +1,12 @@
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "location_extractor"
 version = "1.0.0"
 description = "Extract countries, regions and cities from text"
-# TODO: add authors
+# TODO(skarzi): add authors
 authors = []
 license = "MIT"
 include = [
@@ -10,32 +14,38 @@ include = [
 ]
 readme = "README.md"
 repository = "https://github.com/MMatlacz/LocationExtractor"
-# TODO: add classifiers
+# TODO(skarzi): add classifiers
 classifiers = [
 ]
 
 [tool.poetry.dependencies]
 python = ">=3.7,<4.0"
-numpy = "^1.20.0"
-nltk = "^3.5"
-jellyfish = "^0.8.2"
-pycountry = "^20.7.3"
+
 Unidecode = "^1.2.0"
+jellyfish = "^0.8.2"
+nltk = "^3.5"
+numpy = "^1.20.0"
+pycountry = "^20.7.3"
 
 [tool.poetry.dev-dependencies]
-flake8-pytest-style = "^1.3.0"
-ipython = "^7.20.0"
-isort = "^4.3.21"
-mypy = "^0.812"
+# tests
 pytest = "^6.2.2"
 pytest-cov = "^2.11.1"
 pytest-deadfixtures = "^2.2.1"
 pytest-isort = "^1.3.0"
 pytest-randomly = "^3.5.0"
-safety = "^1.10.3"
+
+# linters
+#python
+flake8-pytest-style = "^1.3.0"
+isort = "^4.3.21"
 wemake-python-styleguide = "^0.14.1"
 wily = "^1.19.0"
+# other
+safety = "^1.10.3"
 
-[build-system]
-requires = ["poetry>=1.0.0"]
-build-backend = "poetry.masonry.api"
+# type hinting
+mypy = "^0.812"
+
+# local development
+ipython = "^7.20.0"
