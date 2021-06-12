@@ -3,7 +3,7 @@ SHELL:=/usr/bin/env bash
 
 .PHONY: lint_python
 lint_python:
-	poetry run mypy location_extractor
+	poetry run mypy location_extractor tests
 	poetry run flake8 location_extractor tests
 	# TODO(skarzi): introduce `import-linter`
 	# poetry run lint-imports
