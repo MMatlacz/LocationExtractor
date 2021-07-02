@@ -579,11 +579,11 @@ python-versions = "*"
 
 [[package]]
 name = "nbformat"
-version = "4.4.0"
+version = "5.1.3"
 description = "The Jupyter Notebook format"
 category = "dev"
 optional = false
-python-versions = "*"
+python-versions = ">=3.5"
 
 [package.dependencies]
 ipython-genutils = "*"
@@ -592,7 +592,8 @@ jupyter-core = "*"
 traitlets = ">=4.1"
 
 [package.extras]
-test = ["pytest", "pytest-cov", "testpath"]
+fast = ["fastjsonschema"]
+test = ["check-manifest", "fastjsonschema", "testpath", "pytest", "pytest-cov"]
 
 [[package]]
 name = "nltk"
@@ -1140,7 +1141,7 @@ typing_extensions = ">=3.6,<4.0"
 
 [[package]]
 name = "wily"
-version = "1.19.0"
+version = "1.20.0"
 description = "A Python application for tracking, reporting on timing and complexity in tests and applications."
 category = "dev"
 optional = false
@@ -1150,7 +1151,7 @@ python-versions = ">=3.6"
 click = ">=7.0,<8.0"
 colorlog = ">=4.0.0,<5.0.0"
 gitpython = ">=3.0.0,<4.0.0"
-nbformat = ">=4.4.0,<4.5.0"
+nbformat = ">=5.1.3,<6.0.0"
 plotly = ">=4.0.0,<5.0.0"
 progress = "1.4"
 radon = ">=4.0.0,<4.1.0"
@@ -1171,7 +1172,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = ">=3.7,<4.0"
-content-hash = "e3a665f6648afc47ba1309d35af879a9ce5e70a447366b8a759fcf62a2df7eb2"
+content-hash = "90350651e0318b68fdc0907d469f02f6636471e4e2f8090faa99699d90c6cbf1"
 
 [metadata.files]
 appnope = [
@@ -1443,8 +1444,8 @@ mypy-extensions = [
     {file = "mypy_extensions-0.4.3.tar.gz", hash = "sha256:2d82818f5bb3e369420cb3c4060a7970edba416647068eb4c5343488a6c604a8"},
 ]
 nbformat = [
-    {file = "nbformat-4.4.0-py2.py3-none-any.whl", hash = "sha256:b9a0dbdbd45bb034f4f8893cafd6f652ea08c8c1674ba83f2dc55d3955743b0b"},
-    {file = "nbformat-4.4.0.tar.gz", hash = "sha256:f7494ef0df60766b7cabe0a3651556345a963b74dbc16bc7c18479041170d402"},
+    {file = "nbformat-5.1.3-py3-none-any.whl", hash = "sha256:eb8447edd7127d043361bc17f2f5a807626bc8e878c7709a1c647abda28a9171"},
+    {file = "nbformat-5.1.3.tar.gz", hash = "sha256:b516788ad70771c6250977c1374fcca6edebe6126fd2adb5a69aa5c2356fd1c8"},
 ]
 nltk = [
     {file = "nltk-3.5.zip", hash = "sha256:845365449cd8c5f9731f7cb9f8bd6fd0767553b9d53af9eb1b3abf7700936b35"},
@@ -1746,8 +1747,8 @@ wemake-python-styleguide = [
     {file = "wemake_python_styleguide-0.14.1-py3-none-any.whl", hash = "sha256:73a501e0547275287a2b926515c000cc25026a8bceb9dcc1bf73ef85a223a3c6"},
 ]
 wily = [
-    {file = "wily-1.19.0-py3-none-any.whl", hash = "sha256:9096e45330a3a3ee0b4f5ced36a0e1c89ccc7a12a0d400c9a2f70c7b27fe7943"},
-    {file = "wily-1.19.0.tar.gz", hash = "sha256:cc93da9286ecbaa39fe886c5ff98560a74f41bd88537b4b9a6bcddef25ddc74d"},
+    {file = "wily-1.20.0-py3-none-any.whl", hash = "sha256:a229db85982f87f31f714fbe49ec4701eb84e4843dc1a1fcbe3305e3c05c4ea7"},
+    {file = "wily-1.20.0.tar.gz", hash = "sha256:c5c8633ff2d377a5eb30cf21fd337859374f893e9b807ba515a53d56a3384700"},
 ]
 zipp = [
     {file = "zipp-3.4.0-py3-none-any.whl", hash = "sha256:102c24ef8f171fd729d46599845e95c7ab894a4cf45f5de11a44cc7444fb1108"},
